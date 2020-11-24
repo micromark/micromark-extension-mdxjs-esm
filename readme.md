@@ -161,7 +161,7 @@ It includes:
     — micromark extension to support all of MDX JS
 *   `micromark/micromark-extension-mdx-jsx`
     — micromark extension to support the JSX of MDX
-*   `micromark/micromark-extension-mdx-expression`
+*   [`micromark/micromark-extension-mdx-expression`][mdx-expression]
     — micromark extension to support the expressions of MDX or MDX JS
 *   `micromark/micromark-extension-mdx-md`
     — micromark extension to support the changes to markdown of MDX
@@ -241,3 +241,5 @@ abide by its terms.
 [mdx]: https://github.com/mdx-js/mdx
 
 [acorn]: https://github.com/acornjs/acorn
+
+[mdx-expression]: https://github.com/micromark/micromark-extension-mdx-expression
