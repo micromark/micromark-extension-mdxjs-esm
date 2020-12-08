@@ -14,8 +14,8 @@ This package provides the low-level modules for integrating with the micromark
 tokenizer but has no handling of compiling to HTML: go to a syntax tree instead.
 
 You should use this with [`mdast-util-mdxjs-esm`][util] (**[mdast][]**).
-Alternatively, use `micromark-extension-mdxjs` with `mdast-util-mdxjs` to
-support all of MDX.js, which includes this package.
+Alternatively, use [`micromark-extension-mdxjs`][mdxjs] with
+[`mdast-util-mdx`][mdast-util-mdx] to support all of MDX.js.
 Or, use it through `remark-mdxjs` (**[remark][]**).
 
 ## Install
@@ -34,7 +34,7 @@ See [`mdast-util-mdxjs-esm`][util] for an example.
 
 ### `syntax(options)`
 
-Support ESM imports and exports of [MDX][].
+Support ESM imports and exports of [MDX][mdx-js].
 
 The export of `syntax` is a function that can be called with options and returns
 an extension for the micromark parser (to tokenize import/exports; can be passed
@@ -153,20 +153,18 @@ It includes:
 
 *   [`micromark/micromark`][micromark]
     — the smallest commonmark-compliant markdown parser that exists
-*   `micromark/micromark-extension-mdx`
+*   [`micromark/micromark-extension-mdx`][mdx]
     — micromark extension to support MDX
-*   `micromark/micromark-extension-mdxjs`
+*   [`micromark/micromark-extension-mdxjs`][mdxjs]
     — micromark extension to support MDX.js
-*   [`micromark/micromark-extension-mdx-jsx`][mdx-jsx]
-    — micromark extension to support MDX (or MDX.js) JSX
 *   [`micromark/micromark-extension-mdx-expression`][mdx-expression]
     — micromark extension to support MDX (or MDX.js) expressions
-*   `micromark/micromark-extension-mdx-md`
+*   [`micromark/micromark-extension-mdx-jsx`][mdx-jsx]
+    — micromark extension to support MDX (or MDX.js) JSX
+*   [`micromark/micromark-extension-mdx-md`][mdx-md]
     — micromark extension to support misc MDX changes
-*   `syntax-tree/mdast-util-mdx`
-    — mdast utility to support all of MDX
-*   `syntax-tree/mdast-util-mdxjs`
-    — mdast utility to support all of MDX.js
+*   [`syntax-tree/mdast-util-mdx`][mdast-util-mdx]
+    — mdast utility to support MDX (or MDX.js)
 
 ## Contribute
 
@@ -228,12 +226,20 @@ abide by its terms.
 
 [mdast]: https://github.com/syntax-tree/mdast
 
-[mdx]: https://github.com/mdx-js/mdx
-
-[acorn]: https://github.com/acornjs/acorn
+[mdx-js]: https://github.com/mdx-js/mdx
 
 [mdx-expression]: https://github.com/micromark/micromark-extension-mdx-expression
 
 [mdx-jsx]: https://github.com/micromark/micromark-extension-mdx-jsx
 
+[mdx-md]: https://github.com/micromark/micromark-extension-mdx-md
+
+[mdx]: https://github.com/micromark/micromark-extension-mdx
+
+[mdxjs]: https://github.com/micromark/micromark-extension-mdxjs
+
 [util]: https://github.com/syntax-tree/mdast-util-mdxjs-esm
+
+[mdast-util-mdx]: https://github.com/syntax-tree/mdast-util-mdx
+
+[acorn]: https://github.com/acornjs/acorn
