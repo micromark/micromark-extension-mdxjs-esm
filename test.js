@@ -209,6 +209,15 @@ test('micromark-extension-mdxjs-esm', function (t) {
   )
 
   t.equal(
+    micromark('import a from "b";\nexport {a};\n\nc', {
+      extensions: [syntax({acorn: acorn})],
+      htmlExtensions: [html]
+    }),
+    '<p>c</p>',
+    'should support a reexport from another import w/ semicolons'
+  )
+
+  t.equal(
     micromark('import a from "b"\nexport {a as default}\n\nc', {
       extensions: [syntax({acorn: acorn})],
       htmlExtensions: [html]
@@ -254,6 +263,24 @@ test('micromark-extension-mdxjs-esm', function (t) {
     }),
     '<p>b</p>',
     'should support `acornOptions` (2)'
+  )
+
+  t.equal(
+    micromark('import a from "b"\n\nexport {a}\n\nc', {
+      extensions: [syntax({acorn: acorn})],
+      htmlExtensions: [html]
+    }),
+    '<p>c</p>',
+    'should support a reexport from another esm block (1)'
+  )
+
+  t.equal(
+    micromark('import a from "b"\n\nexport {a}\n\n# c', {
+      extensions: [syntax({acorn: acorn})],
+      htmlExtensions: [html]
+    }),
+    '<h1>c</h1>',
+    'should support a reexport from another esm block (2)'
   )
 
   t.equal(

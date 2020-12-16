@@ -69,6 +69,7 @@
     "esnext": false,
     "rules": {
       "guard-for-in": "off",
+      "unicorn/explicit-length-check": "off",
       "unicorn/prefer-includes": "off"
     }
   },

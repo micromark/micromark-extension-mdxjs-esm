@@ -37,6 +37,9 @@ function mdxjs(options) {
 
   function tokenizeExportImport(effects, ok, nok) {
     var self = this
+    var definedModuleSpecifiers =
+      self.parser.definedModuleSpecifiers ||
+      (self.parser.definedModuleSpecifiers = [])
     var lastEventIndex = this.events.length + 1 // Add the main `mdxjsEsm` token
     var position = self.now()
     var source = ''
@@ -112,9 +115,13 @@ function mdxjs(options) {
     }
 
     function atEnd(code) {
+      var prefix = definedModuleSpecifiers.length
+        ? 'var ' + definedModuleSpecifiers.join(',') + '\n'
+        : ''
       var result
       var exception
       var index
+      var offset
       var token
 
       effects.exit('mdxjsEsmData')
@@ -125,12 +132,16 @@ function mdxjs(options) {
       }
 
       try {
-        result = acorn.parse(source, acornOptions)
+        result = acorn.parse(prefix + source, acornOptions)
       } catch (error) {
         exception = error
       }
 
-      if (code !== null && exception && exception.raisedAt === source.length) {
+      if (
+        code !== null &&
+        exception &&
+        exception.raisedAt === source.length + prefix.length
+      ) {
         return lineStart(code)
       }
 
@@ -147,6 +158,11 @@ function mdxjs(options) {
       }
 
       index = -1
+
+      if (prefix) {
+        // Remove the `VariableDeclaration`
+        result.body.shift()
+      }
 
       while (++index < result.body.length) {
         token = result.body[index]
@@ -168,6 +184,16 @@ function mdxjs(options) {
             },
             'micromark-extension-mdxjs-esm:non-esm'
           )
+        }
+        // Otherwise, when we’re not interrupting (hacky, because `interrupt` is
+        // used to parse containers and “sniff” if this is ESM), collect all the
+        // local values that are imported.
+        else if (token.type === 'ImportDeclaration' && !self.interrupt) {
+          offset = -1
+
+          while (++offset < token.specifiers.length) {
+            definedModuleSpecifiers.push(token.specifiers[offset].local.name)
+          }
         }
       }
 
