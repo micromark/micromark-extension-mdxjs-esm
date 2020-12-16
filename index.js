@@ -5,6 +5,7 @@ module.exports = mdxjs
 var markdownLineEnding = require('micromark/dist/character/markdown-line-ending')
 var unicodeWhitespace = require('micromark/dist/character/unicode-whitespace')
 var blank = require('micromark/dist/tokenize/partial-blank-line')
+var eventsToAcorn = require('micromark-extension-mdx-expression/lib/util-events-to-acorn')
 var VMessage = require('vfile-message')
 
 var nextBlankConstruct = {tokenize: tokenizeNextBlank, partial: true}
@@ -40,9 +41,7 @@ function mdxjs(options) {
     var definedModuleSpecifiers =
       self.parser.definedModuleSpecifiers ||
       (self.parser.definedModuleSpecifiers = [])
-    var lastEventIndex = this.events.length + 1 // Add the main `mdxjsEsm` token
-    var position = self.now()
-    var source = ''
+    var eventStart = this.events.length + 1 // Add the main `mdxjsEsm` token
     var index = 0
     var buffer
 
@@ -59,7 +58,7 @@ function mdxjs(options) {
       }
 
       // Do not support indent (the easiest check for containers).
-      if (position.column !== 1) return nok(code)
+      if (self.now().column !== 1) return nok(code)
 
       effects.enter('mdxjsEsm')
       effects.enter('mdxjsEsmData')
@@ -115,43 +114,35 @@ function mdxjs(options) {
     }
 
     function atEnd(code) {
-      var prefix = definedModuleSpecifiers.length
-        ? 'var ' + definedModuleSpecifiers.join(',') + '\n'
-        : ''
       var result
-      var exception
       var index
       var offset
       var token
 
       effects.exit('mdxjsEsmData')
 
-      while (lastEventIndex < self.events.length) {
-        source += self.sliceSerialize(self.events[lastEventIndex][1])
-        lastEventIndex += 2 // Skip over `exit`.
-      }
+      result = eventsToAcorn(
+        acorn,
+        acornOptions,
+        self.events.slice(eventStart),
+        {
+          prefix: definedModuleSpecifiers.length
+            ? 'var ' + definedModuleSpecifiers.join(',') + '\n'
+            : ''
+        }
+      )
 
-      try {
-        result = acorn.parse(prefix + source, acornOptions)
-      } catch (error) {
-        exception = error
-      }
-
-      if (
-        code !== null &&
-        exception &&
-        exception.raisedAt === source.length + prefix.length
-      ) {
+      if (code !== null && result.swallow) {
         return lineStart(code)
       }
 
-      if (exception) {
+      if (result.error) {
         throw new VMessage(
-          'Could not parse import/exports with acorn: ' +
-            String(exception).replace(/ \(\d+:\d+\)$/, ''),
+          'Could not parse import/exports with acorn: ' + String(result.error),
           {
-            line: position.line + exception.loc.line - 1,
-            column: exception.loc.column + 1
+            line: result.error.loc.line,
+            column: result.error.loc.column + 1,
+            offset: result.error.pos
           },
           'micromark-extension-mdxjs-esm:acorn'
         )
@@ -159,13 +150,13 @@ function mdxjs(options) {
 
       index = -1
 
-      if (prefix) {
-        // Remove the `VariableDeclaration`
-        result.body.shift()
+      // Remove the `VariableDeclaration`
+      if (definedModuleSpecifiers.length) {
+        result.estree.body.shift()
       }
 
-      while (++index < result.body.length) {
-        token = result.body[index]
+      while (++index < result.estree.body.length) {
+        token = result.estree.body[index]
 
         if (allowedAcornTypes.indexOf(token.type) < 0) {
           throw new VMessage(
@@ -174,12 +165,14 @@ function mdxjs(options) {
               '` in code: only import/exports are supported',
             {
               start: {
-                line: position.line + token.loc.start.line - 1,
-                column: token.loc.start.column + 1
+                line: token.loc.start.line,
+                column: token.loc.start.column + 1,
+                offset: token.start
               },
               end: {
-                line: position.line + token.loc.end.line - 1,
-                column: token.loc.end.column + 1
+                line: token.loc.end.line,
+                column: token.loc.end.column + 1,
+                offset: token.end
               }
             },
             'micromark-extension-mdxjs-esm:non-esm'
@@ -198,7 +191,7 @@ function mdxjs(options) {
       }
 
       token = effects.exit('mdxjsEsm')
-      if (options.addResult) token.estree = result
+      if (options.addResult) token.estree = result.estree
       return ok(code)
     }
   }
