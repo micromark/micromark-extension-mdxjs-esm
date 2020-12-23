@@ -29,8 +29,7 @@ function mdxjs(options) {
   acorn = options.acorn
   acornOptions = Object.assign(
     {ecmaVersion: 2020, sourceType: 'module'},
-    options.acornOptions || {},
-    {locations: true}
+    options.acornOptions || {}
   )
 
   // Lowercase E (`e`) and lowercase I (`i`).
