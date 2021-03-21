@@ -44,7 +44,7 @@ function mdxjs(options) {
     var index = 0
     var buffer
 
-    return start
+    return self.interrupt ? nok : start
 
     function start(code) {
       /* istanbul ignore else - handled by mm */

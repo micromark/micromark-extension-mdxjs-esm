@@ -71,6 +71,7 @@
     "rules": {
       "guard-for-in": "off",
       "unicorn/explicit-length-check": "off",
+      "unicorn/no-this-assignment": "off",
       "unicorn/prefer-includes": "off"
     }
   },

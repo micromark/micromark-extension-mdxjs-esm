@@ -118,12 +118,21 @@ test('micromark-extension-mdxjs-esm', function (t) {
   )
 
   t.equal(
-    micromark('a\nimport a from "b"\n\nb\nexport default c', {
+    micromark('a\n\nimport a from "b"\n\nb\n\nexport default c', {
       extensions: [syntax({acorn: acorn})],
       htmlExtensions: [html]
     }),
     '<p>a</p>\n<p>b</p>\n',
     'should support imports and exports in between other constructs'
+  )
+
+  t.equal(
+    micromark('a\nimport a from "b"\n\nb\nexport default c', {
+      extensions: [syntax({acorn: acorn})],
+      htmlExtensions: [html]
+    }),
+    '<p>a\nimport a from &quot;b&quot;</p>\n<p>b\nexport default c</p>',
+    'should not support import/exports when interrupting paragraphs'
   )
 
   t.throws(
