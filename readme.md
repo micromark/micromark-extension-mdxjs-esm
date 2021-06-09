@@ -13,12 +13,16 @@
 This package provides the low-level modules for integrating with the micromark
 tokenizer but has no handling of compiling to HTML: go to a syntax tree instead.
 
-You should probably use this with [`mdast-util-mdxjs-esm`][util]
-(**[mdast][]**).
-Or use [`micromark-extension-mdxjs`][mdxjs] and
-[`mdast-util-mdx`][mdast-util-mdx] instead, which includes both, to support all
-of MDX.js.
-Or, use those through [`remark-mdx`][remark-mdx] (**[remark][]**).
+## When to use this
+
+This package is already included in [xdm][] and [`mdx-js/mdx` (next)][mdx-js].
+
+You should probably use [`micromark-extension-mdx`][mdx] or
+[`micromark-extension-mdxjs`][mdxjs] instead, which combine this package with
+other MDX features.
+Alternatively, if you’re using [`micromark`][micromark] or
+[`mdast-util-from-markdown`][from-markdown] and you don’t want all of MDX, use
+this package.
 
 ## Install
 
@@ -33,20 +37,42 @@ npm install micromark-extension-mdxjs-esm
 
 ## Use
 
-See [`mdast-util-mdxjs-esm`][util] for an example.
+```js
+import * as acorn from 'acorn'
+import {micromark} from 'micromark'
+import {mdxjsEsm} from 'micromark-extension-mdxjs-esm'
+
+const output = micromark('import a from "b"\n\n# c', {
+  extensions: [mdxjsEsm({acorn})]
+})
+
+console.log(output)
+```
+
+Yields:
+
+```html
+<h1>c</h1>
+```
+
+…which is rather useless: go to a syntax tree with
+[`mdast-util-from-markdown`][from-markdown] and
+[`mdast-util-mdx-expression`][util] instead.
 
 ## API
 
 This package exports the following identifiers: `mdxjsEsm`.
 There is no default export.
 
-### `syntax(options)`
+The export map supports the endorsed
+[`development` condition](https://nodejs.org/api/packages.html#packages_resolving_user_conditions).
+Run `node --conditions development module.js` to get instrumented dev code.
+Without this condition, production code is loaded.
 
-Support ESM imports and exports of [MDX][mdx-js].
+### `mdxjsEsm(options)`
 
-The export of `syntax` is a function that can be called with options and returns
-an extension for the micromark parser (to tokenize import/exports; can be passed
-in `extensions`).
+A function that can be called with options that returns an extension for
+micromark to parse ESM (can be passed in `extensions`).
 
 ##### `options`
 
@@ -230,9 +256,7 @@ abide by its terms.
 
 [micromark]: https://github.com/micromark/micromark
 
-[remark]: https://github.com/remarkjs/remark
-
-[mdast]: https://github.com/syntax-tree/mdast
+[xdm]: https://github.com/wooorm/xdm
 
 [mdx-js]: https://github.com/mdx-js/mdx
 
@@ -252,4 +276,4 @@ abide by its terms.
 
 [acorn]: https://github.com/acornjs/acorn
 
-[remark-mdx]: https://github.com/mdx-js/mdx/tree/next/packages/remark-mdx
+[from-markdown]: https://github.com/syntax-tree/mdast-util-from-markdown
