@@ -2,7 +2,7 @@ import * as acorn from 'acorn'
 import jsx from 'acorn-jsx'
 import test from 'tape'
 import {micromark} from 'micromark'
-import {mdxjsEsm as syntax} from '../index.js'
+import {mdxjsEsm as syntax} from '../dev/index.js'
 
 const own = {}.hasOwnProperty
 

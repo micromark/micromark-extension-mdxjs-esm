@@ -1,6 +1,10 @@
-import {markdownLineEnding, unicodeWhitespace} from 'micromark-util-character'
+import assert from 'assert'
 import {blankLine} from 'micromark-core-commonmark'
+import {markdownLineEnding, unicodeWhitespace} from 'micromark-util-character'
 import {eventsToAcorn} from 'micromark-util-events-to-acorn'
+import {codes} from 'micromark-util-symbol/codes.js'
+import {types} from 'micromark-util-symbol/types.js'
+import {positionFromEstree} from 'unist-util-position-from-estree'
 import {VFileMessage} from 'vfile-message'
 
 const nextBlankConstruct = {tokenize: tokenizeNextBlank, partial: true}
@@ -12,10 +16,10 @@ const allowedAcornTypes = new Set([
   'ImportDeclaration'
 ])
 
-export function mdxjsEsm(options) {
+export function mdxjsEsm(options = {}) {
   const exportImportConstruct = {tokenize: tokenizeExportImport, concrete: true}
 
-  if (!options || !options.acorn || !options.acorn.parse) {
+  if (!options.acorn || !options.acorn.parse) {
     throw new Error('Expected an `acorn` instance passed in as `options.acorn`')
   }
 
@@ -25,8 +29,12 @@ export function mdxjsEsm(options) {
     options.acornOptions
   )
 
-  // Lowercase E (`e`) and lowercase I (`i`).
-  return {flow: {101: exportImportConstruct, 105: exportImportConstruct}}
+  return {
+    flow: {
+      [codes.lowercaseE]: exportImportConstruct,
+      [codes.lowercaseI]: exportImportConstruct
+    }
+  }
 
   function tokenizeExportImport(effects, ok, nok) {
     const self = this
@@ -40,18 +48,14 @@ export function mdxjsEsm(options) {
     return self.interrupt ? nok : start
 
     function start(code) {
-      /* istanbul ignore else - handled by mm */
-      if (code === 101 /* `e` */) {
-        buffer = 'export'
-      } else if (code === 105 /* `i` */) {
-        buffer = 'import'
-      } else {
-        throw new Error('Expected `e` or `i`')
-      }
+      assert(
+        code === codes.lowercaseE || code === codes.lowercaseI,
+        'expected `e` or `i`'
+      )
 
       // Do not support indent (the easiest check for containers).
-      if (self.now().column !== 1) return nok(code)
-
+      if (self.now().column > 1) return nok(code)
+      buffer = code === codes.lowercaseE ? 'export' : 'import'
       effects.enter('mdxjsEsm')
       effects.enter('mdxjsEsmData')
       return keyword(code)
@@ -76,7 +80,7 @@ export function mdxjsEsm(options) {
     }
 
     function rest(code) {
-      if (code === null) {
+      if (code === codes.eof) {
         return atEnd(code)
       }
 
@@ -95,9 +99,9 @@ export function mdxjsEsm(options) {
 
     function lineStart(code) {
       if (markdownLineEnding(code)) {
-        effects.enter('lineEnding')
+        effects.enter(types.lineEnding)
         effects.consume(code)
-        effects.exit('lineEnding')
+        effects.exit(types.lineEnding)
         return lineStart
       }
 
@@ -106,12 +110,9 @@ export function mdxjsEsm(options) {
     }
 
     function atEnd(code) {
-      let index
-      let offset
-      let token
-
       effects.exit('mdxjsEsmData')
 
+      let index = -1
       const result = eventsToAcorn(self.events.slice(eventStart), {
         acorn,
         acornOptions,
@@ -121,7 +122,7 @@ export function mdxjsEsm(options) {
             : ''
       })
 
-      if (code !== null && result.swallow) {
+      if (code !== codes.eof && result.swallow) {
         return lineStart(code)
       }
 
@@ -137,50 +138,41 @@ export function mdxjsEsm(options) {
         )
       }
 
-      index = -1
-
       // Remove the `VariableDeclaration`
       if (definedModuleSpecifiers.length > 0) {
         result.estree.body.shift()
       }
 
       while (++index < result.estree.body.length) {
-        token = result.estree.body[index]
+        const node = result.estree.body[index]
 
-        if (!allowedAcornTypes.has(token.type)) {
+        if (!allowedAcornTypes.has(node.type)) {
           throw new VFileMessage(
             'Unexpected `' +
-              token.type +
+              node.type +
               '` in code: only import/exports are supported',
-            {
-              start: {
-                line: token.loc.start.line,
-                column: token.loc.start.column + 1,
-                offset: token.start
-              },
-              end: {
-                line: token.loc.end.line,
-                column: token.loc.end.column + 1,
-                offset: token.end
-              }
-            },
+            positionFromEstree(node),
             'micromark-extension-mdxjs-esm:non-esm'
           )
         }
+
         // Otherwise, when we’re not interrupting (hacky, because `interrupt` is
         // used to parse containers and “sniff” if this is ESM), collect all the
         // local values that are imported.
-        else if (token.type === 'ImportDeclaration' && !self.interrupt) {
-          offset = -1
+        if (node.type === 'ImportDeclaration' && !self.interrupt) {
+          let index = -1
 
-          while (++offset < token.specifiers.length) {
-            definedModuleSpecifiers.push(token.specifiers[offset].local.name)
+          while (++index < node.specifiers.length) {
+            definedModuleSpecifiers.push(node.specifiers[index].local.name)
           }
         }
       }
 
-      token = effects.exit('mdxjsEsm')
-      if (options.addResult) token.estree = result.estree
+      Object.assign(
+        effects.exit('mdxjsEsm'),
+        options.addResult ? {estree: result.estree} : undefined
+      )
+
       return ok(code)
     }
   }
@@ -191,9 +183,9 @@ function tokenizeNextBlank(effects, ok, nok) {
 
   function start(code) {
     effects.exit('mdxjsEsmData')
-    effects.enter('lineEndingBlank')
+    effects.enter(types.lineEndingBlank)
     effects.consume(code)
-    effects.exit('lineEndingBlank')
+    effects.exit(types.lineEndingBlank)
     return effects.attempt(blankLine, ok, nok)
   }
 }
