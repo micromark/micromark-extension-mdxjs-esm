@@ -1,4 +1,9 @@
+/**
+ * @typedef {import('micromark-util-types').HtmlExtension} HtmlExtension
+ */
+
 import * as acorn from 'acorn'
+// @ts-expect-error: hush
 import jsx from 'acorn-jsx'
 import test from 'tape'
 import {micromark} from 'micromark'
@@ -6,6 +11,7 @@ import {mdxjsEsm as syntax} from '../dev/index.js'
 
 const own = {}.hasOwnProperty
 
+/** @type {HtmlExtension} */
 const html = {
   enter: {
     mdxjsEsm() {
@@ -24,6 +30,7 @@ test('micromark-extension-mdxjs-esm', (t) => {
   t.throws(
     () => {
       micromark('import a from "b"\n\nc', {
+        // @ts-expect-error: runtime.
         extensions: [syntax()],
         htmlExtensions: [html]
       })
@@ -301,18 +308,31 @@ test('micromark-extension-mdxjs-esm', (t) => {
     micromark('export var a = () => {}\n\nb', {
       extensions: [syntax({acorn, addResult: true})],
       htmlExtensions: [
-        {enter: {mdxjsEsm: checkResult}, exit: {mdxjsEsm: html.exit.mdxjsEsm}}
+        {
+          enter: {
+            mdxjsEsm(token) {
+              t.ok(
+                'estree' in token,
+                '`addResult` should add `estree` to `mdxjsEsm`'
+              )
+              t.equal(
+                // @ts-expect-error: hush.
+                token.estree.type,
+                'Program',
+                '`addResult` should add a program'
+              )
+              // @ts-expect-error: hush.
+              return html.enter.mdxjsEsm.call(this, token)
+            }
+          },
+          // @ts-expect-error: hush.
+          exit: {mdxjsEsm: html.exit.mdxjsEsm}
+        }
       ]
     }),
     '<p>b</p>',
     'should support `addResult`'
   )
-
-  function checkResult(token) {
-    t.ok('estree' in token, '`addResult` should add `estree` to `mdxjsEsm`')
-    t.equal(token.estree.type, 'Program', '`addResult` should add a program')
-    return html.enter.mdxjsEsm.call(this, token)
-  }
 
   t.end()
 })
@@ -327,6 +347,7 @@ test('micromark-extension-mdxjs-esm (import)', (t) => {
     'default and whole': 'import a, * as b from "c"',
     'side-effects': 'import "a"'
   }
+  /** @type {keyof data} */
   let key
 
   for (key in data) {
@@ -367,6 +388,7 @@ test('micromark-extension-mdxjs-esm (export)', (t) => {
     'reexport as a default whole': 'export {default} from "b"',
     'reexport default and non-default': 'export {default as a, b} from "c"'
   }
+  /** @type {keyof data} */
   let key
 
   for (key in data) {

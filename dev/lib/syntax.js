@@ -1,3 +1,19 @@
+/**
+ * @typedef {import('micromark-util-types').Extension} Extension
+ * @typedef {import('micromark-util-types').Tokenizer} Tokenizer
+ * @typedef {import('micromark-util-types').State} State
+ *
+ * @typedef {import('micromark-util-events-to-acorn').Acorn} Acorn
+ * @typedef {import('micromark-util-events-to-acorn').AcornOptions} AcornOptions
+ */
+
+/**
+ * @typedef Options
+ * @property {boolean} [addResult=false]
+ * @property {Acorn} acorn
+ * @property {AcornOptions} [acornOptions]
+ */
+
 import assert from 'assert'
 import {blankLine} from 'micromark-core-commonmark'
 import {markdownLineEnding, unicodeWhitespace} from 'micromark-util-character'
@@ -16,10 +32,14 @@ const allowedAcornTypes = new Set([
   'ImportDeclaration'
 ])
 
-export function mdxjsEsm(options = {}) {
+/**
+ * @param {Options} options
+ * @returs {Extension}
+ */
+export function mdxjsEsm(options) {
   const exportImportConstruct = {tokenize: tokenizeExportImport, concrete: true}
 
-  if (!options.acorn || !options.acorn.parse) {
+  if (!options || !options.acorn || !options.acorn.parse) {
     throw new Error('Expected an `acorn` instance passed in as `options.acorn`')
   }
 
@@ -36,17 +56,23 @@ export function mdxjsEsm(options = {}) {
     }
   }
 
+  /** @type {Tokenizer} */
   function tokenizeExportImport(effects, ok, nok) {
     const self = this
+    /** @type {string[]} */
     const definedModuleSpecifiers =
+      // @ts-expect-error: hush
       self.parser.definedModuleSpecifiers ||
+      // @ts-expect-error: hush
       (self.parser.definedModuleSpecifiers = [])
     const eventStart = this.events.length + 1 // Add the main `mdxjsEsm` token
     let index = 0
+    /** @type {string} */
     let buffer
 
     return self.interrupt ? nok : start
 
+    /** @type {State} */
     function start(code) {
       assert(
         code === codes.lowercaseE || code === codes.lowercaseI,
@@ -61,6 +87,7 @@ export function mdxjsEsm(options = {}) {
       return keyword(code)
     }
 
+    /** @type {State} */
     function keyword(code) {
       if (code === buffer.charCodeAt(index++)) {
         effects.consume(code)
@@ -70,6 +97,7 @@ export function mdxjsEsm(options = {}) {
       return nok(code)
     }
 
+    /** @type {State} */
     function after(code) {
       if (unicodeWhitespace(code)) {
         effects.consume(code)
@@ -79,6 +107,7 @@ export function mdxjsEsm(options = {}) {
       return nok(code)
     }
 
+    /** @type {State} */
     function rest(code) {
       if (code === codes.eof) {
         return atEnd(code)
@@ -92,11 +121,13 @@ export function mdxjsEsm(options = {}) {
       return rest
     }
 
+    /** @type {State} */
     function atEol(code) {
       effects.exit('mdxjsEsmData')
       return lineStart(code)
     }
 
+    /** @type {State} */
     function lineStart(code) {
       if (markdownLineEnding(code)) {
         effects.enter(types.lineEnding)
@@ -109,6 +140,7 @@ export function mdxjsEsm(options = {}) {
       return rest(code)
     }
 
+    /** @type {State} */
     function atEnd(code) {
       effects.exit('mdxjsEsmData')
 
@@ -130,13 +162,18 @@ export function mdxjsEsm(options = {}) {
         throw new VFileMessage(
           'Could not parse import/exports with acorn: ' + String(result.error),
           {
+            // @ts-expect-error: hush
             line: result.error.loc.line,
+            // @ts-expect-error: hush
             column: result.error.loc.column + 1,
+            // @ts-expect-error: hush
             offset: result.error.pos
           },
           'micromark-extension-mdxjs-esm:acorn'
         )
       }
+
+      assert(result.estree, 'expected `estree` to be defined')
 
       // Remove the `VariableDeclaration`
       if (definedModuleSpecifiers.length > 0) {
@@ -151,6 +188,7 @@ export function mdxjsEsm(options = {}) {
             'Unexpected `' +
               node.type +
               '` in code: only import/exports are supported',
+            // @ts-expect-error: hush
             positionFromEstree(node),
             'micromark-extension-mdxjs-esm:non-esm'
           )
@@ -178,9 +216,11 @@ export function mdxjsEsm(options = {}) {
   }
 }
 
+/** @type {Tokenizer} */
 function tokenizeNextBlank(effects, ok, nok) {
   return start
 
+  /** @type {State} */
   function start(code) {
     effects.exit('mdxjsEsmData')
     effects.enter(types.lineEndingBlank)
