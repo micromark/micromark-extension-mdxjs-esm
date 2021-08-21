@@ -3,7 +3,6 @@
  */
 
 import * as acorn from 'acorn'
-// @ts-expect-error: hush
 import jsx from 'acorn-jsx'
 import test from 'tape'
 import {micromark} from 'micromark'
