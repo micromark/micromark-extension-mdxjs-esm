@@ -47,11 +47,13 @@
     "micromark-util-events-to-acorn": "^1.0.0",
     "micromark-util-symbol": "^1.0.0",
     "micromark-util-types": "^1.0.0",
+    "power-assert": "^1.0.0",
     "unist-util-position-from-estree": "^1.1.0",
     "vfile-message": "^3.0.0"
   },
   "devDependencies": {
     "@types/acorn": "^4.0.0",
+    "@types/power-assert": "^1.0.0",
     "@types/tape": "^4.0.0",
     "acorn": "^8.0.0",
     "acorn-jsx": "^5.0.0",
