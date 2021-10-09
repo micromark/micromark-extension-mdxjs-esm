@@ -14,7 +14,7 @@
  * @property {AcornOptions} [acornOptions]
  */
 
-import assert from 'power-assert'
+import {ok as assert} from 'uvu/assert'
 import {blankLine} from 'micromark-core-commonmark'
 import {markdownLineEnding, unicodeWhitespace} from 'micromark-util-character'
 import {eventsToAcorn} from 'micromark-util-events-to-acorn'
