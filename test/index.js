@@ -267,6 +267,17 @@ test('micromark-extension-mdxjs-esm', (t) => {
 
   t.throws(
     () => {
+      micromark('export {a}\n', {
+        extensions: [syntax({acorn: acorn.Parser.extend(jsx())})],
+        htmlExtensions: [html]
+      })
+    },
+    /Export 'a' is not defined/,
+    'should support EOF after EOL'
+  )
+
+  t.throws(
+    () => {
       micromark('export var a = () => {}\n\nb', {
         extensions: [syntax({acorn, acornOptions: {ecmaVersion: 5}})],
         htmlExtensions: [html]

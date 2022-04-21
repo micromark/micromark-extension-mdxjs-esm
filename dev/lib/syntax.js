@@ -110,11 +110,11 @@ export function mdxjsEsm(options) {
     /** @type {State} */
     function rest(code) {
       if (code === codes.eof) {
-        return atEnd(code)
+        return atEndOfData(code)
       }
 
       if (markdownLineEnding(code)) {
-        return effects.check(nextBlankConstruct, atEnd, atEol)(code)
+        return effects.check(nextBlankConstruct, atEndOfData, atEol)(code)
       }
 
       effects.consume(code)
@@ -136,14 +136,22 @@ export function mdxjsEsm(options) {
         return lineStart
       }
 
+      if (code === codes.eof) {
+        return atEnd(code)
+      }
+
       effects.enter('mdxjsEsmData')
       return rest(code)
     }
 
     /** @type {State} */
-    function atEnd(code) {
+    function atEndOfData(code) {
       effects.exit('mdxjsEsmData')
+      return atEnd(code)
+    }
 
+    /** @type {State} */
+    function atEnd(code) {
       let index = -1
       const result = eventsToAcorn(self.events.slice(eventStart), {
         acorn,
