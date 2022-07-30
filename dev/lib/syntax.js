@@ -9,9 +9,16 @@
 
 /**
  * @typedef Options
- * @property {boolean} [addResult=false]
+ *   Configuration (required).
  * @property {Acorn} acorn
+ *   Acorn parser to use (required).
  * @property {AcornOptions} [acornOptions]
+ *   Options to pass to acorn (default: `{ecmaVersion: 2020, locations: true,
+ *   sourceType: 'module'}`).
+ *   All fields (except for `locations`) can be set.
+ * @property {boolean} [addResult=false]
+ *   Whether to add an `estree` field to `mdxjsEsm` tokens with results from
+ *   acorn.
  */
 
 import {ok as assert} from 'uvu/assert'
@@ -33,8 +40,14 @@ const allowedAcornTypes = new Set([
 ])
 
 /**
+ * Add support for MDX ESM import/exports.
+ *
+ * Function called with options to get a syntax extension for micromark.
+ *
  * @param {Options} options
- * @returs {Extension}
+ *   Configuration (required).
+ * @returns {Extension}
+ *   Syntax extension for micromark (passed in `extensions`).
  */
 export function mdxjsEsm(options) {
   const exportImportConstruct = {tokenize: tokenizeExportImport, concrete: true}
@@ -89,7 +102,7 @@ export function mdxjsEsm(options) {
 
     /** @type {State} */
     function keyword(code) {
-      if (code === buffer.charCodeAt(index++)) {
+      if (code === buffer.codePointAt(index++)) {
         effects.consume(code)
         return index === buffer.length ? after : keyword
       }
