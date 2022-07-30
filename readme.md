@@ -8,31 +8,70 @@
 [![Backers][backers-badge]][collective]
 [![Chat][chat-badge]][chat]
 
-**[micromark][]** extension to support MDX.js ESM import/exports.
+[micromark][] extension to support MDX ESM (`import x from 'y'`).
 
-This package provides the low-level modules for integrating with the micromark
-tokenizer but has no handling of compiling to HTML: go to a syntax tree instead.
+## Contents
+
+*   [What is this?](#what-is-this)
+*   [When to use this](#when-to-use-this)
+*   [Install](#install)
+*   [Use](#use)
+*   [API](#api)
+    *   [`mdxjsEsm(options)`](#mdxjsesmoptions)
+*   [Authoring](#authoring)
+*   [Syntax](#syntax)
+*   [Errors](#errors)
+    *   [Could not parse import/exports with acorn: $error](#could-not-parse-importexports-with-acorn-error)
+    *   [Unexpected `$type` in code: only import/exports are supported](#unexpected-type-in-code-only-importexports-are-supported)
+*   [Tokens](#tokens)
+*   [Types](#types)
+*   [Compatibility](#compatibility)
+*   [Security](#security)
+*   [Related](#related)
+*   [Contribute](#contribute)
+*   [License](#license)
+
+## What is this?
+
+This package contains extensions that add support for ESM enabled by MDX to
+[`micromark`][micromark].
+It matches how imports and exports work in JavaScript through acorn.
 
 ## When to use this
 
-This package is already included in [xdm][] and [`mdx-js/mdx` (next)][mdx-js].
+These tools are all low-level.
+In many cases, you want to use [`remark-mdx`][remark-mdx] with remark instead.
+When you are using [`mdx-js/mdx`][mdxjs], that is already included.
 
-You should probably use [`micromark-extension-mdx`][mdx] or
-[`micromark-extension-mdxjs`][mdxjs] instead, which combine this package with
-other MDX features.
-Alternatively, if you’re using [`micromark`][micromark] or
-[`mdast-util-from-markdown`][from-markdown] and you don’t want all of MDX, use
-this package.
+Even when you want to use `micromark`, you likely want to use
+[`micromark-extension-mdxjs`][micromark-extension-mdxjs] to support all MDX
+features.
+That extension includes this extension.
+
+When working with [`mdast-util-from-markdown`][mdast-util-from-markdown], you
+must combine this package with [`mdast-util-mdxjs-esm`][mdast-util-mdxjs-esm].
 
 ## Install
 
-This package is [ESM only](https://gist.github.com/sindresorhus/a39789f98801d908bbc7ff3ecc99d99c):
-Node 12+ is needed to use it and it must be `import`ed instead of `require`d.
-
-[npm][]:
+This package is [ESM only][esm].
+In Node.js (version 12.20+, 14.14+, 16.0+, or 18.0+), install with [npm][]:
 
 ```sh
 npm install micromark-extension-mdxjs-esm
+```
+
+In Deno with [`esm.sh`][esmsh]:
+
+```js
+import {mdxjsEsm} from 'https://esm.sh/micromark-extension-mdxjs-esm@1'
+```
+
+In browsers with [`esm.sh`][esmsh]:
+
+```html
+<script type="module">
+  import {mdxjsEsm} from 'https://esm.sh/micromark-extension-mdxjs-esm@1?bundle'
+</script>
 ```
 
 ## Use
@@ -55,26 +94,29 @@ Yields:
 <h1>c</h1>
 ```
 
-…which is rather useless: go to a syntax tree with
-[`mdast-util-from-markdown`][from-markdown] and
-[`mdast-util-mdx-expression`][util] instead.
+…which is useless: go to a syntax tree with
+[`mdast-util-from-markdown`][mdast-util-from-markdown] and
+[`mdast-util-mdxjs-esm`][mdast-util-mdxjs-esm] instead.
 
 ## API
 
-This package exports the following identifiers: `mdxjsEsm`.
+This package exports the identifier `mdxjsEsm`.
 There is no default export.
 
-The export map supports the endorsed
-[`development` condition](https://nodejs.org/api/packages.html#packages_resolving_user_conditions).
+The export map supports the endorsed [`development` condition][condition].
 Run `node --conditions development module.js` to get instrumented dev code.
 Without this condition, production code is loaded.
 
 ### `mdxjsEsm(options)`
 
-A function that can be called with options that returns an extension for
-micromark to parse ESM (can be passed in `extensions`).
+Add support for MDX ESM import/exports.
+
+Function called with options to get a syntax extension for micromark.
+That extension can be passed in `extensions`.
 
 ##### `options`
+
+Configuration (required).
 
 ###### `options.acorn`
 
@@ -90,6 +132,11 @@ All fields except for `locations` can be set.
 
 Whether to add an `estree` field to `mdxjsEsm` tokens with results from acorn
 (`boolean`, default: `false`).
+
+## Authoring
+
+When authoring markdown with ESM, make sure to follow import and export
+statements with blank lines before more markdown.
 
 ## Syntax
 
@@ -183,22 +230,30 @@ It includes:
 *   `whitespace` for markdown spaces and tabs in blank lines
 *   `mdxjsEsmData` for any character in a line of `mdxjsEsm`
 
+## Types
+
+This package is fully typed with [TypeScript][].
+It exports the additional type `Options`.
+
+## Compatibility
+
+This package is at least compatible with all maintained versions of Node.js.
+As of now, that is Node.js 12.20+, 14.14+, 16.0+, and 18.0+.
+It also works in Deno and modern browsers.
+
+## Security
+
+This package deals with compiling JavaScript.
+If you do not trust the JavaScript, this package does nothing to change that.
+
 ## Related
 
-*   [`micromark/micromark`][micromark]
-    — the smallest commonmark-compliant markdown parser that exists
-*   [`micromark/micromark-extension-mdx`][mdx]
-    — support MDX
-*   [`micromark/micromark-extension-mdxjs`][mdxjs]
-    — support MDX.js
-*   [`micromark/micromark-extension-mdx-expression`][mdx-expression]
-    — support MDX (or MDX.js) expressions
-*   [`micromark/micromark-extension-mdx-jsx`][mdx-jsx]
-    — support MDX (or MDX.js) JSX
-*   [`micromark/micromark-extension-mdx-md`][mdx-md]
-    — support misc MDX changes
-*   [`syntax-tree/mdast-util-mdx`][mdast-util-mdx]
-    — support MDX (or MDX.js) in mdast
+*   [`micromark/micromark-extension-mdxjs`][micromark-extension-mdxjs]
+    — micromark extension to support MDX
+*   [`syntax-tree/mdast-util-mdxjs-esm`][mdast-util-mdxjs-esm]
+    — mdast utility to support MDX ESM
+*   [`remark-mdx`][remark-mdx]
+    — remark plugin to support MDX syntax
 
 ## Contribute
 
@@ -244,6 +299,8 @@ abide by its terms.
 
 [npm]: https://docs.npmjs.com/cli/install
 
+[esmsh]: https://esm.sh
+
 [license]: license
 
 [author]: https://wooorm.com
@@ -254,26 +311,22 @@ abide by its terms.
 
 [coc]: https://github.com/micromark/.github/blob/HEAD/code-of-conduct.md
 
+[esm]: https://gist.github.com/sindresorhus/a39789f98801d908bbc7ff3ecc99d99c
+
+[typescript]: https://www.typescriptlang.org
+
+[condition]: https://nodejs.org/api/packages.html#packages_resolving_user_conditions
+
 [micromark]: https://github.com/micromark/micromark
 
-[xdm]: https://github.com/wooorm/xdm
+[micromark-extension-mdxjs]: https://github.com/micromark/micromark-extension-mdxjs
 
-[mdx-js]: https://github.com/mdx-js/mdx
+[mdast-util-mdxjs-esm]: https://github.com/syntax-tree/mdast-util-mdxjs-esm
 
-[mdx-expression]: https://github.com/micromark/micromark-extension-mdx-expression
+[mdast-util-from-markdown]: https://github.com/syntax-tree/mdast-util-from-markdown
 
-[mdx-jsx]: https://github.com/micromark/micromark-extension-mdx-jsx
+[remark-mdx]: https://mdxjs.com/packages/remark-mdx/
 
-[mdx-md]: https://github.com/micromark/micromark-extension-mdx-md
-
-[mdx]: https://github.com/micromark/micromark-extension-mdx
-
-[mdxjs]: https://github.com/micromark/micromark-extension-mdxjs
-
-[util]: https://github.com/syntax-tree/mdast-util-mdxjs-esm
-
-[mdast-util-mdx]: https://github.com/syntax-tree/mdast-util-mdx
+[mdxjs]: https://mdxjs.com
 
 [acorn]: https://github.com/acornjs/acorn
-
-[from-markdown]: https://github.com/syntax-tree/mdast-util-from-markdown
