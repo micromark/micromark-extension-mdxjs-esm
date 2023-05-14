@@ -2,13 +2,15 @@
  * @typedef {import('micromark-util-types').HtmlExtension} HtmlExtension
  */
 
-import * as acorn from 'acorn'
-import jsx from 'acorn-jsx'
+import {Parser} from 'acorn'
+import acornJsx from 'acorn-jsx'
 import test from 'tape'
 import {micromark} from 'micromark'
-import {mdxjsEsm as syntax} from '../dev/index.js'
+import {mdxjsEsm} from '../dev/index.js'
 
 const own = {}.hasOwnProperty
+
+const acorn = Parser.extend(acornJsx())
 
 /** @type {HtmlExtension} */
 const html = {
@@ -30,7 +32,7 @@ test('micromark-extension-mdxjs-esm', (t) => {
     () => {
       micromark('import a from "b"\n\nc', {
         // @ts-expect-error: runtime.
-        extensions: [syntax()],
+        extensions: [mdxjsEsm()],
         htmlExtensions: [html]
       })
     },
@@ -40,7 +42,7 @@ test('micromark-extension-mdxjs-esm', (t) => {
 
   t.equal(
     micromark('import a from "b"\n\nc', {
-      extensions: [syntax({acorn})],
+      extensions: [mdxjsEsm({acorn})],
       htmlExtensions: [html]
     }),
     '<p>c</p>',
@@ -49,7 +51,7 @@ test('micromark-extension-mdxjs-esm', (t) => {
 
   t.equal(
     micromark('export default a\n\nb', {
-      extensions: [syntax({acorn})],
+      extensions: [mdxjsEsm({acorn})],
       htmlExtensions: [html]
     }),
     '<p>b</p>',
@@ -58,7 +60,7 @@ test('micromark-extension-mdxjs-esm', (t) => {
 
   t.equal(
     micromark('impossible', {
-      extensions: [syntax({acorn})],
+      extensions: [mdxjsEsm({acorn})],
       htmlExtensions: [html]
     }),
     '<p>impossible</p>',
@@ -67,7 +69,7 @@ test('micromark-extension-mdxjs-esm', (t) => {
 
   t.equal(
     micromark('exporting', {
-      extensions: [syntax({acorn})],
+      extensions: [mdxjsEsm({acorn})],
       htmlExtensions: [html]
     }),
     '<p>exporting</p>',
@@ -76,7 +78,7 @@ test('micromark-extension-mdxjs-esm', (t) => {
 
   t.equal(
     micromark('import.', {
-      extensions: [syntax({acorn})],
+      extensions: [mdxjsEsm({acorn})],
       htmlExtensions: [html]
     }),
     '<p>import.</p>',
@@ -85,7 +87,7 @@ test('micromark-extension-mdxjs-esm', (t) => {
 
   t.equal(
     micromark('import("a")', {
-      extensions: [syntax({acorn})],
+      extensions: [mdxjsEsm({acorn})],
       htmlExtensions: [html]
     }),
     '<p>import(&quot;a&quot;)</p>',
@@ -94,7 +96,7 @@ test('micromark-extension-mdxjs-esm', (t) => {
 
   t.equal(
     micromark('  import a from "b"\n  export default c', {
-      extensions: [syntax({acorn})],
+      extensions: [mdxjsEsm({acorn})],
       htmlExtensions: [html]
     }),
     '<p>import a from &quot;b&quot;\nexport default c</p>',
@@ -103,7 +105,7 @@ test('micromark-extension-mdxjs-esm', (t) => {
 
   t.equal(
     micromark('- import a from "b"\n> export default c', {
-      extensions: [syntax({acorn})],
+      extensions: [mdxjsEsm({acorn})],
       htmlExtensions: [html]
     }),
     '<ul>\n<li>import a from &quot;b&quot;</li>\n</ul>\n<blockquote>\n<p>export default c</p>\n</blockquote>',
@@ -112,7 +114,7 @@ test('micromark-extension-mdxjs-esm', (t) => {
 
   t.equal(
     micromark('import a from "b"\nexport default c', {
-      extensions: [syntax({acorn})],
+      extensions: [mdxjsEsm({acorn})],
       htmlExtensions: [html]
     }),
     '',
@@ -121,7 +123,7 @@ test('micromark-extension-mdxjs-esm', (t) => {
 
   t.equal(
     micromark('import a from "b"\n\nexport default c', {
-      extensions: [syntax({acorn})],
+      extensions: [mdxjsEsm({acorn})],
       htmlExtensions: [html]
     }),
     '',
@@ -130,7 +132,7 @@ test('micromark-extension-mdxjs-esm', (t) => {
 
   t.equal(
     micromark('a\n\nimport a from "b"\n\nb\n\nexport default c', {
-      extensions: [syntax({acorn})],
+      extensions: [mdxjsEsm({acorn})],
       htmlExtensions: [html]
     }),
     '<p>a</p>\n<p>b</p>\n',
@@ -139,7 +141,7 @@ test('micromark-extension-mdxjs-esm', (t) => {
 
   t.equal(
     micromark('a\nimport a from "b"\n\nb\nexport default c', {
-      extensions: [syntax({acorn})],
+      extensions: [mdxjsEsm({acorn})],
       htmlExtensions: [html]
     }),
     '<p>a\nimport a from &quot;b&quot;</p>\n<p>b\nexport default c</p>',
@@ -148,7 +150,7 @@ test('micromark-extension-mdxjs-esm', (t) => {
 
   t.throws(
     () => {
-      micromark('import a', {extensions: [syntax({acorn})]})
+      micromark('import a', {extensions: [mdxjsEsm({acorn})]})
     },
     /Could not parse import\/exports with acorn: SyntaxError: Unexpected token/,
     'should crash on invalid import/exports (1)'
@@ -156,7 +158,7 @@ test('micromark-extension-mdxjs-esm', (t) => {
 
   t.throws(
     () => {
-      micromark('import 1/1', {extensions: [syntax({acorn})]})
+      micromark('import 1/1', {extensions: [mdxjsEsm({acorn})]})
     },
     /Could not parse import\/exports with acorn: SyntaxError: Unexpected token/,
     'should crash on invalid import/exports (2)'
@@ -164,7 +166,7 @@ test('micromark-extension-mdxjs-esm', (t) => {
 
   t.equal(
     micromark('export {\n  a\n} from "b"\n\nc', {
-      extensions: [syntax({acorn})],
+      extensions: [mdxjsEsm({acorn})],
       htmlExtensions: [html]
     }),
     '<p>c</p>',
@@ -173,7 +175,7 @@ test('micromark-extension-mdxjs-esm', (t) => {
 
   t.equal(
     micromark('export {\n\n  a\n\n} from "b"\n\nc', {
-      extensions: [syntax({acorn})],
+      extensions: [mdxjsEsm({acorn})],
       htmlExtensions: [html]
     }),
     '<p>c</p>',
@@ -183,7 +185,7 @@ test('micromark-extension-mdxjs-esm', (t) => {
   t.throws(
     () => {
       micromark('import a from "b"\n*md*?', {
-        extensions: [syntax({acorn})]
+        extensions: [mdxjsEsm({acorn})]
       })
     },
     /Could not parse import\/exports with acorn: SyntaxError: Unexpected token/,
@@ -192,7 +194,7 @@ test('micromark-extension-mdxjs-esm', (t) => {
 
   t.equal(
     micromark('export var a = 1\n// b\n/* c */\n\nd', {
-      extensions: [syntax({acorn})],
+      extensions: [mdxjsEsm({acorn})],
       htmlExtensions: [html]
     }),
     '<p>d</p>',
@@ -202,7 +204,7 @@ test('micromark-extension-mdxjs-esm', (t) => {
   t.throws(
     () => {
       micromark('export var a = 1\nvar b\n\nc', {
-        extensions: [syntax({acorn})]
+        extensions: [mdxjsEsm({acorn})]
       })
     },
     /Unexpected `VariableDeclaration` in code: only import\/exports are supported/,
@@ -212,7 +214,7 @@ test('micromark-extension-mdxjs-esm', (t) => {
   t.throws(
     () => {
       micromark('import ("a")\n\nb', {
-        extensions: [syntax({acorn})]
+        extensions: [mdxjsEsm({acorn})]
       })
     },
     /Unexpected `ExpressionStatement` in code: only import\/exports are supported/,
@@ -221,7 +223,7 @@ test('micromark-extension-mdxjs-esm', (t) => {
 
   t.equal(
     micromark('import a from "b"\nexport {a}\n\nc', {
-      extensions: [syntax({acorn})],
+      extensions: [mdxjsEsm({acorn})],
       htmlExtensions: [html]
     }),
     '<p>c</p>',
@@ -230,7 +232,7 @@ test('micromark-extension-mdxjs-esm', (t) => {
 
   t.equal(
     micromark('import a from "b";\nexport {a};\n\nc', {
-      extensions: [syntax({acorn})],
+      extensions: [mdxjsEsm({acorn})],
       htmlExtensions: [html]
     }),
     '<p>c</p>',
@@ -239,26 +241,16 @@ test('micromark-extension-mdxjs-esm', (t) => {
 
   t.equal(
     micromark('import a from "b"\nexport {a as default}\n\nc', {
-      extensions: [syntax({acorn})],
+      extensions: [mdxjsEsm({acorn})],
       htmlExtensions: [html]
     }),
     '<p>c</p>',
     'should support a reexport default from another import'
   )
 
-  t.throws(
-    () => {
-      micromark('export var a = () => <b />', {
-        extensions: [syntax({acorn})]
-      })
-    },
-    /Could not parse import\/exports with acorn: SyntaxError: Unexpected token/,
-    'should not support JSX by default'
-  )
-
   t.equal(
     micromark('export var a = () => <b />\n\nc', {
-      extensions: [syntax({acorn: acorn.Parser.extend(jsx())})],
+      extensions: [mdxjsEsm({acorn})],
       htmlExtensions: [html]
     }),
     '<p>c</p>',
@@ -268,7 +260,7 @@ test('micromark-extension-mdxjs-esm', (t) => {
   t.throws(
     () => {
       micromark('export {a}\n', {
-        extensions: [syntax({acorn: acorn.Parser.extend(jsx())})],
+        extensions: [mdxjsEsm({acorn})],
         htmlExtensions: [html]
       })
     },
@@ -279,7 +271,7 @@ test('micromark-extension-mdxjs-esm', (t) => {
   t.throws(
     () => {
       micromark('export var a = () => {}\n\nb', {
-        extensions: [syntax({acorn, acornOptions: {ecmaVersion: 5}})],
+        extensions: [mdxjsEsm({acorn, acornOptions: {ecmaVersion: 5}})],
         htmlExtensions: [html]
       })
     },
@@ -289,7 +281,7 @@ test('micromark-extension-mdxjs-esm', (t) => {
 
   t.equal(
     micromark('export var a = () => {}\n\nb', {
-      extensions: [syntax({acorn, acornOptions: {ecmaVersion: 6}})],
+      extensions: [mdxjsEsm({acorn, acornOptions: {ecmaVersion: 6}})],
       htmlExtensions: [html]
     }),
     '<p>b</p>',
@@ -298,7 +290,7 @@ test('micromark-extension-mdxjs-esm', (t) => {
 
   t.equal(
     micromark('import a from "b"\n\nexport {a}\n\nc', {
-      extensions: [syntax({acorn})],
+      extensions: [mdxjsEsm({acorn})],
       htmlExtensions: [html]
     }),
     '<p>c</p>',
@@ -307,7 +299,7 @@ test('micromark-extension-mdxjs-esm', (t) => {
 
   t.equal(
     micromark('import a from "b"\n\nexport {a}\n\n# c', {
-      extensions: [syntax({acorn})],
+      extensions: [mdxjsEsm({acorn})],
       htmlExtensions: [html]
     }),
     '<h1>c</h1>',
@@ -316,7 +308,7 @@ test('micromark-extension-mdxjs-esm', (t) => {
 
   t.equal(
     micromark('export var a = () => {}\n\nb', {
-      extensions: [syntax({acorn, addResult: true})],
+      extensions: [mdxjsEsm({acorn, addResult: true})],
       htmlExtensions: [
         {
           enter: {
@@ -364,7 +356,7 @@ test('micromark-extension-mdxjs-esm (import)', (t) => {
     if (own.call(data, key)) {
       t.equal(
         micromark(data[key], {
-          extensions: [syntax({acorn})],
+          extensions: [mdxjsEsm({acorn})],
           htmlExtensions: [html]
         }),
         '',
@@ -405,7 +397,7 @@ test('micromark-extension-mdxjs-esm (export)', (t) => {
     if (own.call(data, key)) {
       t.equal(
         micromark(data[key], {
-          extensions: [syntax({acorn})],
+          extensions: [mdxjsEsm({acorn})],
           htmlExtensions: [html]
         }),
         '',
