@@ -7,7 +7,7 @@ import test from 'node:test'
 import {Parser} from 'acorn'
 import acornJsx from 'acorn-jsx'
 import {micromark} from 'micromark'
-import {mdxjsEsm} from '../dev/index.js'
+import {mdxjsEsm} from 'micromark-extension-mdxjs-esm'
 
 const own = {}.hasOwnProperty
 
@@ -28,9 +28,15 @@ const html = {
   }
 }
 
-test('mdxjsEsm', () => {
+test('mdxjsEsm', async function () {
+  assert.deepEqual(
+    Object.keys(await import('micromark-extension-mdxjs-esm')).sort(),
+    ['mdxjsEsm'],
+    'should expose the public api'
+  )
+
   assert.throws(
-    () => {
+    function () {
       micromark('import a from "b"\n\nc', {
         // @ts-expect-error: runtime.
         extensions: [mdxjsEsm()],
@@ -150,7 +156,7 @@ test('mdxjsEsm', () => {
   )
 
   assert.throws(
-    () => {
+    function () {
       micromark('import a', {extensions: [mdxjsEsm({acorn})]})
     },
     /Could not parse import\/exports with acorn: SyntaxError: Unexpected token/,
@@ -158,7 +164,7 @@ test('mdxjsEsm', () => {
   )
 
   assert.throws(
-    () => {
+    function () {
       micromark('import 1/1', {extensions: [mdxjsEsm({acorn})]})
     },
     /Could not parse import\/exports with acorn: SyntaxError: Unexpected token/,
@@ -184,7 +190,7 @@ test('mdxjsEsm', () => {
   )
 
   assert.throws(
-    () => {
+    function () {
       micromark('import a from "b"\n*md*?', {
         extensions: [mdxjsEsm({acorn})]
       })
@@ -203,7 +209,7 @@ test('mdxjsEsm', () => {
   )
 
   assert.throws(
-    () => {
+    function () {
       micromark('export var a = 1\nvar b\n\nc', {
         extensions: [mdxjsEsm({acorn})]
       })
@@ -213,7 +219,7 @@ test('mdxjsEsm', () => {
   )
 
   assert.throws(
-    () => {
+    function () {
       micromark('import ("a")\n\nb', {
         extensions: [mdxjsEsm({acorn})]
       })
@@ -259,7 +265,7 @@ test('mdxjsEsm', () => {
   )
 
   assert.throws(
-    () => {
+    function () {
       micromark('export {a}\n', {
         extensions: [mdxjsEsm({acorn})],
         htmlExtensions: [html]
@@ -270,7 +276,7 @@ test('mdxjsEsm', () => {
   )
 
   assert.throws(
-    () => {
+    function () {
       micromark('export var a = () => {}\n\nb', {
         extensions: [mdxjsEsm({acorn, acornOptions: {ecmaVersion: 5}})],
         htmlExtensions: [html]
@@ -338,7 +344,7 @@ test('mdxjsEsm', () => {
   )
 })
 
-test('mdxjsEsm (import)', () => {
+test('mdxjsEsm (import)', function () {
   const data = {
     default: 'import a from "b"',
     whole: 'import * as a from "b"',
@@ -365,7 +371,7 @@ test('mdxjsEsm (import)', () => {
   }
 })
 
-test('mdxjsEsm (export)', () => {
+test('mdxjsEsm (export)', function () {
   const data = {
     var: 'export var a = ""',
     const: 'export const a = ""',
