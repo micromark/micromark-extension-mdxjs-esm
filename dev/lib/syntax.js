@@ -13,12 +13,11 @@
  * @property {Acorn} acorn
  *   Acorn parser to use (required).
  * @property {AcornOptions | null | undefined} [acornOptions]
- *   Options to pass to acorn (default: `{ecmaVersion: 2020, locations: true,
+ *   Configuration for acorn (default: `{ecmaVersion: 2020, locations: true,
  *   sourceType: 'module'}`).
- *   All fields (except for `locations`) can be set.
+ *   all fields except `locations` can be set
  * @property {boolean | null | undefined} [addResult=false]
- *   Whether to add an `estree` field to `mdxjsEsm` tokens with results from
- *   acorn.
+ *   Whether to add `estree` fields to tokens with results from acorn.
  */
 
 import {ok as assert} from 'uvu/assert'

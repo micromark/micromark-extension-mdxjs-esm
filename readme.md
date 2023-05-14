@@ -8,7 +8,7 @@
 [![Backers][backers-badge]][collective]
 [![Chat][chat-badge]][chat]
 
-[micromark][] extension to support MDX ESM (`import x from 'y'`).
+[micromark][] extension to support [MDX][mdxjs] ESM (`import x from 'y'`).
 
 ## Contents
 
@@ -18,6 +18,7 @@
 *   [Use](#use)
 *   [API](#api)
     *   [`mdxjsEsm(options)`](#mdxjsesmoptions)
+    *   [`Options`](#options)
 *   [Authoring](#authoring)
 *   [Syntax](#syntax)
 *   [Errors](#errors)
@@ -33,28 +34,33 @@
 
 ## What is this?
 
-This package contains extensions that add support for ESM enabled by MDX to
-[`micromark`][micromark].
+This package contains an extension that adds support for the ESM syntax enabled
+by [MDX][mdxjs] to [`micromark`][micromark].
+These extensions are used inside MDX.
 It matches how imports and exports work in JavaScript through acorn.
+
+This package is aware of JavaScript syntax.
 
 ## When to use this
 
-These tools are all low-level.
-In many cases, you want to use [`remark-mdx`][remark-mdx] with remark instead.
-When you are using [`mdx-js/mdx`][mdxjs], that is already included.
+This project is useful when you want to support ESM in markdown.
 
-Even when you want to use `micromark`, you likely want to use
-[`micromark-extension-mdxjs`][micromark-extension-mdxjs] to support all MDX
-features.
-That extension includes this extension.
+You can use this extension when you are working with [`micromark`][micromark].
+To support all MDX features, use
+[`micromark-extension-mdxjs`][micromark-extension-mdxjs] instead.
 
-When working with [`mdast-util-from-markdown`][mdast-util-from-markdown], you
-must combine this package with [`mdast-util-mdxjs-esm`][mdast-util-mdxjs-esm].
+When you need a syntax tree, combine this package with
+[`mdast-util-mdxjs-esm`][mdast-util-mdxjs-esm].
+
+All these packages are used in [`remark-mdx`][remark-mdx], which focusses on
+making it easier to transform content by abstracting these internals away.
+
+When you are using [`mdx-js/mdx`][mdxjs], all of this is already included.
 
 ## Install
 
 This package is [ESM only][esm].
-In Node.js (version 12.20+, 14.14+, 16.0+, or 18.0+), install with [npm][]:
+In Node.js (version 16+), install with [npm][]:
 
 ```sh
 npm install micromark-extension-mdxjs-esm
@@ -77,9 +83,12 @@ In browsers with [`esm.sh`][esmsh]:
 ## Use
 
 ```js
-import * as acorn from 'acorn'
+import {Parser} from 'acorn'
+import acornJsx from 'acorn-jsx'
 import {micromark} from 'micromark'
 import {mdxjsEsm} from 'micromark-extension-mdxjs-esm'
+
+const acorn = Parser.extend(acornJsx())
 
 const output = micromark('import a from "b"\n\n# c', {
   extensions: [mdxjsEsm({acorn})]
@@ -100,72 +109,74 @@ Yields:
 
 ## API
 
-This package exports the identifier `mdxjsEsm`.
+This package exports the identifier [`mdxjsEsm`][api-mdxjs-esm].
 There is no default export.
 
-The export map supports the endorsed [`development` condition][condition].
+The export map supports the [`development` condition][development].
 Run `node --conditions development module.js` to get instrumented dev code.
 Without this condition, production code is loaded.
 
 ### `mdxjsEsm(options)`
 
-Add support for MDX ESM import/exports.
+Create an extension for `micromark` to enable MDX ESM syntax.
 
-Function called with options to get a syntax extension for micromark.
-That extension can be passed in `extensions`.
+###### Parameters
 
-##### `options`
+*   `options` ([`Options`][api-options], required)
+    — configuration
 
-Configuration (required).
+###### Returns
 
-###### `options.acorn`
+Extension for `micromark` that can be passed in `extensions` to enable MDX
+ESM syntax ([`Extension`][micromark-extension]).
 
-Acorn parser to use ([`Acorn`][acorn], required).
+### `Options`
 
-###### `options.acornOptions`
+Configuration (TypeScript type).
 
-Options to pass to acorn (`Object`, default: `{ecmaVersion: 2020, locations:
-true, sourceType: 'module'}`).
-All fields except for `locations` can be set.
+###### Fields
 
-###### `options.addResult`
-
-Whether to add an `estree` field to `mdxjsEsm` tokens with results from acorn
-(`boolean`, default: `false`).
+*   `acorn` ([`Acorn`][acorn], required)
+    — acorn parser to use
+*   `acornOptions` ([`AcornOptions`][acorn-options], default:
+    `{ecmaVersion: 2020, locations: true, sourceType: 'module'}`)
+    — configuration for acorn; all fields except `locations` can be set
+*   `addResult` (`boolean`, default: `false`)
+    — whether to add `estree` fields to tokens with results from acorn
 
 ## Authoring
 
-When authoring markdown with ESM, make sure to follow import and export
+When authoring markdown with ESM, make sure to follow export and import
 statements with blank lines before more markdown.
-
-## Syntax
 
 All valid imports and exports are supported, depending on what the given acorn
 instance and configuration supports.
 
-When the lowercase strings `export` or `import` are found, followed by unicode
-whitespace (`\s`), we expect JavaScript.
+When the lowercase strings `export` or `import` are found, followed by a space,
+we expect JavaScript.
 Otherwise, like normal in markdown, we exit and it’ll end up as a paragraph.
-We continue parsing until we find a line ending followed by a blank line.
+We continue parsing until we find a blank line.
 At that point, we parse with acorn: it if parses, we found our block.
 Otherwise, if parsing failed at the last character, we assume it’s a blank line
 in code: we continue on until the next blank line and try again.
 Otherwise, the acorn error is thrown.
 
-```js
-import a from "b"
-import * as a from "b"
-import {a} from "b"
-import {a as b} from "c"
-import a, {b as c} from "d"
-import a, * as b from "c"
-import "a"
+Some examples of valid export and import statements:
 
-export var a = ""
-export const a = ""
-export let a = ""
+```js
+import a from 'b'
+import * as a from 'b'
+import {a} from 'b'
+import {a as b} from 'c'
+import a, {b as c} from 'd'
+import a, * as b from 'c'
+import 'a'
+
+export var a = ''
+export const a = ''
+export let a = ''
 export var a, b
-export var a = "a", b = "b"
+export var a = 'a', b = 'b'
 export function a() {}
 export class a {}
 export var {a} = {}
@@ -174,26 +185,39 @@ export var [a] = []
 export default a = 1
 export default function a() {}
 export default class a {}
-export * from "a"
-export * as a from "b"
-export {a} from "b"
-export {a as b} from "c"
-export {default} from "b"
-export {default as a, b} from "c"
+export * from 'a'
+export * as a from 'b'
+export {a} from 'b'
+export {a as b} from 'c'
+export {default} from 'b'
+export {default as a, b} from 'c'
 
 {/* Blank lines are supported in expressions: */}
 
 export function a() {
 
-  return "b"
+  return 'b'
 
 }
 
 {/* A blank line must be used after import/exports: this is incorrect! */}
 
-import a from "b"
+import a from 'b'
 ## Hello, world!
 ```
+
+## Syntax
+
+ESM forms with the following BNF:
+
+```bnf
+; Restriction: the entire construct must be valid JavaScript.
+mdx_esm ::= word ' ' *line *(eol *line)
+
+word ::= 'e' 'x' 'p' 'o' 'r' 't' | 'i' 'm' 'p' 'o' 'r' 't'
+```
+
+This construct must be followed by a blank line or eof (end of file).
 
 ## Errors
 
@@ -233,27 +257,29 @@ It includes:
 ## Types
 
 This package is fully typed with [TypeScript][].
-It exports the additional type `Options`.
+It exports the additional type [`Options`][api-options].
 
 ## Compatibility
 
-This package is at least compatible with all maintained versions of Node.js.
-As of now, that is Node.js 12.20+, 14.14+, 16.0+, and 18.0+.
-It also works in Deno and modern browsers.
+Projects maintained by the unified collective are compatible with all maintained
+versions of Node.js.
+As of now, that is Node.js 16+.
+Our projects sometimes work with older versions, but this is not guaranteed.
+
+These extensions work with `micromark` version 3+.
 
 ## Security
 
-This package deals with compiling JavaScript.
-If you do not trust the JavaScript, this package does nothing to change that.
+This package is safe.
 
 ## Related
 
-*   [`micromark/micromark-extension-mdxjs`][micromark-extension-mdxjs]
-    — micromark extension to support MDX
-*   [`syntax-tree/mdast-util-mdxjs-esm`][mdast-util-mdxjs-esm]
-    — mdast utility to support MDX ESM
+*   [`micromark-extension-mdxjs`][micromark-extension-mdxjs]
+    — support all MDX syntax
+*   [`mdast-util-mdxjs-esm`][mdast-util-mdxjs-esm]
+    — support MDX ESM in mdast
 *   [`remark-mdx`][remark-mdx]
-    — remark plugin to support MDX syntax
+    — support all MDX syntax in remark
 
 ## Contribute
 
@@ -315,9 +341,11 @@ abide by its terms.
 
 [typescript]: https://www.typescriptlang.org
 
-[condition]: https://nodejs.org/api/packages.html#packages_resolving_user_conditions
+[development]: https://nodejs.org/api/packages.html#packages_resolving_user_conditions
 
 [micromark]: https://github.com/micromark/micromark
+
+[micromark-extension]: https://github.com/micromark/micromark#syntaxextension
 
 [micromark-extension-mdxjs]: https://github.com/micromark/micromark-extension-mdxjs
 
@@ -330,3 +358,9 @@ abide by its terms.
 [mdxjs]: https://mdxjs.com
 
 [acorn]: https://github.com/acornjs/acorn
+
+[acorn-options]: https://github.com/acornjs/acorn/blob/96c721dbf89d0ccc3a8c7f39e69ef2a6a3c04dfa/acorn/dist/acorn.d.ts#L16
+
+[api-mdxjs-esm]: #mdxjsesmoptions
+
+[api-options]: #options
