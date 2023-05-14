@@ -1,6 +1,6 @@
 {
   "name": "micromark-extension-mdxjs-esm",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "micromark extension to support MDX JS import/exports",
   "license": "MIT",
   "keywords": [
