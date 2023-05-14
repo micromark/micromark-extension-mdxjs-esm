@@ -1,5 +1,6 @@
 /**
  * @typedef {import('micromark-util-types').Extension} Extension
+ * @typedef {import('micromark-util-types').TokenizeContext} TokenizeContext
  * @typedef {import('micromark-util-types').Tokenizer} Tokenizer
  * @typedef {import('micromark-util-types').State} State
  *
@@ -69,7 +70,10 @@ export function mdxjsEsm(options) {
     }
   }
 
-  /** @type {Tokenizer} */
+  /**
+   * @this {TokenizeContext}
+   * @type {Tokenizer}
+   */
   function tokenizeExportImport(effects, ok, nok) {
     const self = this
     /** @type {string[]} */
@@ -183,11 +187,8 @@ export function mdxjsEsm(options) {
         throw new VFileMessage(
           'Could not parse import/exports with acorn: ' + String(result.error),
           {
-            // @ts-expect-error: hush
             line: result.error.loc.line,
-            // @ts-expect-error: hush
             column: result.error.loc.column + 1,
-            // @ts-expect-error: hush
             offset: result.error.pos
           },
           'micromark-extension-mdxjs-esm:acorn'
