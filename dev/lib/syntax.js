@@ -1,11 +1,10 @@
 /**
- * @typedef {import('micromark-util-types').Extension} Extension
- * @typedef {import('micromark-util-types').TokenizeContext} TokenizeContext
- * @typedef {import('micromark-util-types').Tokenizer} Tokenizer
- * @typedef {import('micromark-util-types').State} State
- *
  * @typedef {import('micromark-util-events-to-acorn').Acorn} Acorn
  * @typedef {import('micromark-util-events-to-acorn').AcornOptions} AcornOptions
+ * @typedef {import('micromark-util-types').Extension} Extension
+ * @typedef {import('micromark-util-types').State} State
+ * @typedef {import('micromark-util-types').TokenizeContext} TokenizeContext
+ * @typedef {import('micromark-util-types').Tokenizer} Tokenizer
  */
 
 /**
@@ -13,11 +12,11 @@
  *   Configuration (required).
  * @property {Acorn} acorn
  *   Acorn parser to use (required).
- * @property {AcornOptions} [acornOptions]
+ * @property {AcornOptions | null | undefined} [acornOptions]
  *   Options to pass to acorn (default: `{ecmaVersion: 2020, locations: true,
  *   sourceType: 'module'}`).
  *   All fields (except for `locations`) can be set.
- * @property {boolean} [addResult=false]
+ * @property {boolean | null | undefined} [addResult=false]
  *   Whether to add an `estree` field to `mdxjsEsm` tokens with results from
  *   acorn.
  */
@@ -76,7 +75,7 @@ export function mdxjsEsm(options) {
    */
   function tokenizeExportImport(effects, ok, nok) {
     const self = this
-    /** @type {string[]} */
+    /** @type {Array<string>} */
     const definedModuleSpecifiers =
       // @ts-expect-error: hush
       self.parser.definedModuleSpecifiers ||
