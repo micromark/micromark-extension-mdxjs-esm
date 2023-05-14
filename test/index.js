@@ -2,9 +2,10 @@
  * @typedef {import('micromark-util-types').HtmlExtension} HtmlExtension
  */
 
+import assert from 'node:assert/strict'
+import test from 'node:test'
 import {Parser} from 'acorn'
 import acornJsx from 'acorn-jsx'
-import test from 'tape'
 import {micromark} from 'micromark'
 import {mdxjsEsm} from '../dev/index.js'
 
@@ -27,8 +28,8 @@ const html = {
   }
 }
 
-test('micromark-extension-mdxjs-esm', (t) => {
-  t.throws(
+test('mdxjsEsm', () => {
+  assert.throws(
     () => {
       micromark('import a from "b"\n\nc', {
         // @ts-expect-error: runtime.
@@ -40,7 +41,7 @@ test('micromark-extension-mdxjs-esm', (t) => {
     'should throw if `acorn` is not passed in'
   )
 
-  t.equal(
+  assert.equal(
     micromark('import a from "b"\n\nc', {
       extensions: [mdxjsEsm({acorn})],
       htmlExtensions: [html]
@@ -49,7 +50,7 @@ test('micromark-extension-mdxjs-esm', (t) => {
     'should support an import'
   )
 
-  t.equal(
+  assert.equal(
     micromark('export default a\n\nb', {
       extensions: [mdxjsEsm({acorn})],
       htmlExtensions: [html]
@@ -58,7 +59,7 @@ test('micromark-extension-mdxjs-esm', (t) => {
     'should support an export'
   )
 
-  t.equal(
+  assert.equal(
     micromark('impossible', {
       extensions: [mdxjsEsm({acorn})],
       htmlExtensions: [html]
@@ -67,7 +68,7 @@ test('micromark-extension-mdxjs-esm', (t) => {
     'should not support other keywords (`impossible`)'
   )
 
-  t.equal(
+  assert.equal(
     micromark('exporting', {
       extensions: [mdxjsEsm({acorn})],
       htmlExtensions: [html]
@@ -76,7 +77,7 @@ test('micromark-extension-mdxjs-esm', (t) => {
     'should not support other keywords (`exporting`)'
   )
 
-  t.equal(
+  assert.equal(
     micromark('import.', {
       extensions: [mdxjsEsm({acorn})],
       htmlExtensions: [html]
@@ -85,7 +86,7 @@ test('micromark-extension-mdxjs-esm', (t) => {
     'should not support a non-whitespace after the keyword'
   )
 
-  t.equal(
+  assert.equal(
     micromark('import("a")', {
       extensions: [mdxjsEsm({acorn})],
       htmlExtensions: [html]
@@ -94,7 +95,7 @@ test('micromark-extension-mdxjs-esm', (t) => {
     'should not support a non-whitespace after the keyword (import-as-a-function)'
   )
 
-  t.equal(
+  assert.equal(
     micromark('  import a from "b"\n  export default c', {
       extensions: [mdxjsEsm({acorn})],
       htmlExtensions: [html]
@@ -103,7 +104,7 @@ test('micromark-extension-mdxjs-esm', (t) => {
     'should not support an indent'
   )
 
-  t.equal(
+  assert.equal(
     micromark('- import a from "b"\n> export default c', {
       extensions: [mdxjsEsm({acorn})],
       htmlExtensions: [html]
@@ -112,7 +113,7 @@ test('micromark-extension-mdxjs-esm', (t) => {
     'should not support keywords in containers'
   )
 
-  t.equal(
+  assert.equal(
     micromark('import a from "b"\nexport default c', {
       extensions: [mdxjsEsm({acorn})],
       htmlExtensions: [html]
@@ -121,7 +122,7 @@ test('micromark-extension-mdxjs-esm', (t) => {
     'should support imports and exports in the same “block”'
   )
 
-  t.equal(
+  assert.equal(
     micromark('import a from "b"\n\nexport default c', {
       extensions: [mdxjsEsm({acorn})],
       htmlExtensions: [html]
@@ -130,7 +131,7 @@ test('micromark-extension-mdxjs-esm', (t) => {
     'should support imports and exports in separate “blocks”'
   )
 
-  t.equal(
+  assert.equal(
     micromark('a\n\nimport a from "b"\n\nb\n\nexport default c', {
       extensions: [mdxjsEsm({acorn})],
       htmlExtensions: [html]
@@ -139,7 +140,7 @@ test('micromark-extension-mdxjs-esm', (t) => {
     'should support imports and exports in between other constructs'
   )
 
-  t.equal(
+  assert.equal(
     micromark('a\nimport a from "b"\n\nb\nexport default c', {
       extensions: [mdxjsEsm({acorn})],
       htmlExtensions: [html]
@@ -148,7 +149,7 @@ test('micromark-extension-mdxjs-esm', (t) => {
     'should not support import/exports when interrupting paragraphs'
   )
 
-  t.throws(
+  assert.throws(
     () => {
       micromark('import a', {extensions: [mdxjsEsm({acorn})]})
     },
@@ -156,7 +157,7 @@ test('micromark-extension-mdxjs-esm', (t) => {
     'should crash on invalid import/exports (1)'
   )
 
-  t.throws(
+  assert.throws(
     () => {
       micromark('import 1/1', {extensions: [mdxjsEsm({acorn})]})
     },
@@ -164,7 +165,7 @@ test('micromark-extension-mdxjs-esm', (t) => {
     'should crash on invalid import/exports (2)'
   )
 
-  t.equal(
+  assert.equal(
     micromark('export {\n  a\n} from "b"\n\nc', {
       extensions: [mdxjsEsm({acorn})],
       htmlExtensions: [html]
@@ -173,7 +174,7 @@ test('micromark-extension-mdxjs-esm', (t) => {
     'should support line endings in import/exports'
   )
 
-  t.equal(
+  assert.equal(
     micromark('export {\n\n  a\n\n} from "b"\n\nc', {
       extensions: [mdxjsEsm({acorn})],
       htmlExtensions: [html]
@@ -182,7 +183,7 @@ test('micromark-extension-mdxjs-esm', (t) => {
     'should support blank lines in import/exports'
   )
 
-  t.throws(
+  assert.throws(
     () => {
       micromark('import a from "b"\n*md*?', {
         extensions: [mdxjsEsm({acorn})]
@@ -192,7 +193,7 @@ test('micromark-extension-mdxjs-esm', (t) => {
     'should crash on markdown after import/export w/o blank line'
   )
 
-  t.equal(
+  assert.equal(
     micromark('export var a = 1\n// b\n/* c */\n\nd', {
       extensions: [mdxjsEsm({acorn})],
       htmlExtensions: [html]
@@ -201,7 +202,7 @@ test('micromark-extension-mdxjs-esm', (t) => {
     'should support comments in “blocks”'
   )
 
-  t.throws(
+  assert.throws(
     () => {
       micromark('export var a = 1\nvar b\n\nc', {
         extensions: [mdxjsEsm({acorn})]
@@ -211,7 +212,7 @@ test('micromark-extension-mdxjs-esm', (t) => {
     'should crash on other declarations in “blocks”'
   )
 
-  t.throws(
+  assert.throws(
     () => {
       micromark('import ("a")\n\nb', {
         extensions: [mdxjsEsm({acorn})]
@@ -221,7 +222,7 @@ test('micromark-extension-mdxjs-esm', (t) => {
     'should crash on import-as-a-function with a space `import (x)`'
   )
 
-  t.equal(
+  assert.equal(
     micromark('import a from "b"\nexport {a}\n\nc', {
       extensions: [mdxjsEsm({acorn})],
       htmlExtensions: [html]
@@ -230,7 +231,7 @@ test('micromark-extension-mdxjs-esm', (t) => {
     'should support a reexport from another import'
   )
 
-  t.equal(
+  assert.equal(
     micromark('import a from "b";\nexport {a};\n\nc', {
       extensions: [mdxjsEsm({acorn})],
       htmlExtensions: [html]
@@ -239,7 +240,7 @@ test('micromark-extension-mdxjs-esm', (t) => {
     'should support a reexport from another import w/ semicolons'
   )
 
-  t.equal(
+  assert.equal(
     micromark('import a from "b"\nexport {a as default}\n\nc', {
       extensions: [mdxjsEsm({acorn})],
       htmlExtensions: [html]
@@ -248,7 +249,7 @@ test('micromark-extension-mdxjs-esm', (t) => {
     'should support a reexport default from another import'
   )
 
-  t.equal(
+  assert.equal(
     micromark('export var a = () => <b />\n\nc', {
       extensions: [mdxjsEsm({acorn})],
       htmlExtensions: [html]
@@ -257,7 +258,7 @@ test('micromark-extension-mdxjs-esm', (t) => {
     'should support JSX if an `acorn` instance supporting it is passed in'
   )
 
-  t.throws(
+  assert.throws(
     () => {
       micromark('export {a}\n', {
         extensions: [mdxjsEsm({acorn})],
@@ -268,7 +269,7 @@ test('micromark-extension-mdxjs-esm', (t) => {
     'should support EOF after EOL'
   )
 
-  t.throws(
+  assert.throws(
     () => {
       micromark('export var a = () => {}\n\nb', {
         extensions: [mdxjsEsm({acorn, acornOptions: {ecmaVersion: 5}})],
@@ -279,7 +280,7 @@ test('micromark-extension-mdxjs-esm', (t) => {
     'should support `acornOptions` (1)'
   )
 
-  t.equal(
+  assert.equal(
     micromark('export var a = () => {}\n\nb', {
       extensions: [mdxjsEsm({acorn, acornOptions: {ecmaVersion: 6}})],
       htmlExtensions: [html]
@@ -288,7 +289,7 @@ test('micromark-extension-mdxjs-esm', (t) => {
     'should support `acornOptions` (2)'
   )
 
-  t.equal(
+  assert.equal(
     micromark('import a from "b"\n\nexport {a}\n\nc', {
       extensions: [mdxjsEsm({acorn})],
       htmlExtensions: [html]
@@ -297,7 +298,7 @@ test('micromark-extension-mdxjs-esm', (t) => {
     'should support a reexport from another esm block (1)'
   )
 
-  t.equal(
+  assert.equal(
     micromark('import a from "b"\n\nexport {a}\n\n# c', {
       extensions: [mdxjsEsm({acorn})],
       htmlExtensions: [html]
@@ -306,18 +307,18 @@ test('micromark-extension-mdxjs-esm', (t) => {
     'should support a reexport from another esm block (2)'
   )
 
-  t.equal(
+  assert.equal(
     micromark('export var a = () => {}\n\nb', {
       extensions: [mdxjsEsm({acorn, addResult: true})],
       htmlExtensions: [
         {
           enter: {
             mdxjsEsm(token) {
-              t.ok(
+              assert.ok(
                 'estree' in token,
                 '`addResult` should add `estree` to `mdxjsEsm`'
               )
-              t.equal(
+              assert.equal(
                 // @ts-expect-error: hush.
                 token.estree.type,
                 'Program',
@@ -335,11 +336,9 @@ test('micromark-extension-mdxjs-esm', (t) => {
     '<p>b</p>',
     'should support `addResult`'
   )
-
-  t.end()
 })
 
-test('micromark-extension-mdxjs-esm (import)', (t) => {
+test('mdxjsEsm (import)', () => {
   const data = {
     default: 'import a from "b"',
     whole: 'import * as a from "b"',
@@ -354,7 +353,7 @@ test('micromark-extension-mdxjs-esm (import)', (t) => {
 
   for (key in data) {
     if (own.call(data, key)) {
-      t.equal(
+      assert.equal(
         micromark(data[key], {
           extensions: [mdxjsEsm({acorn})],
           htmlExtensions: [html]
@@ -364,11 +363,9 @@ test('micromark-extension-mdxjs-esm (import)', (t) => {
       )
     }
   }
-
-  t.end()
 })
 
-test('micromark-extension-mdxjs-esm (export)', (t) => {
+test('mdxjsEsm (export)', () => {
   const data = {
     var: 'export var a = ""',
     const: 'export const a = ""',
@@ -395,7 +392,7 @@ test('micromark-extension-mdxjs-esm (export)', (t) => {
 
   for (key in data) {
     if (own.call(data, key)) {
-      t.equal(
+      assert.equal(
         micromark(data[key], {
           extensions: [mdxjsEsm({acorn})],
           htmlExtensions: [html]
@@ -405,6 +402,4 @@ test('micromark-extension-mdxjs-esm (export)', (t) => {
       )
     }
   }
-
-  t.end()
 })
