@@ -23,14 +23,14 @@
 
 import {ok as assert} from 'uvu/assert'
 import {blankLine} from 'micromark-core-commonmark'
-import {markdownLineEnding, unicodeWhitespace} from 'micromark-util-character'
+import {asciiAlpha, markdownLineEnding} from 'micromark-util-character'
 import {eventsToAcorn} from 'micromark-util-events-to-acorn'
 import {codes} from 'micromark-util-symbol/codes.js'
 import {types} from 'micromark-util-symbol/types.js'
 import {positionFromEstree} from 'unist-util-position-from-estree'
 import {VFileMessage} from 'vfile-message'
 
-const nextBlankConstruct = {tokenize: tokenizeNextBlank, partial: true}
+const blankLineBefore = {tokenize: tokenizeNextBlank, partial: true}
 
 const allowedAcornTypes = new Set([
   'ExportAllDeclaration',
@@ -40,14 +40,13 @@ const allowedAcornTypes = new Set([
 ])
 
 /**
- * Add support for MDX ESM import/exports.
- *
- * Function called with options to get a syntax extension for micromark.
+ * Create an extension for `micromark` to enable MDX ESM syntax.
  *
  * @param {Options} options
  *   Configuration (required).
  * @returns {Extension}
- *   Syntax extension for micromark (passed in `extensions`).
+ *   Extension for `micromark` that can be passed in `extensions` to enable MDX
+ *   ESM syntax.
  */
 export function mdxjsEsm(options) {
   const exportImportConstruct = {tokenize: tokenizeExportImport, concrete: true}
@@ -82,93 +81,140 @@ export function mdxjsEsm(options) {
       // @ts-expect-error: hush
       (self.parser.definedModuleSpecifiers = [])
     const eventStart = this.events.length + 1 // Add the main `mdxjsEsm` token
-    let index = 0
-    /** @type {string} */
-    let buffer
+    let buffer = ''
 
     return self.interrupt ? nok : start
 
-    /** @type {State} */
+    /**
+     * Start of MDX ESM.
+     *
+     * ```markdown
+     * > | import a from 'b'
+     *     ^
+     * ```
+     *
+     * @type {State}
+     */
     function start(code) {
       assert(
         code === codes.lowercaseE || code === codes.lowercaseI,
         'expected `e` or `i`'
       )
 
-      // Do not support indent (the easiest check for containers).
+      // Only at the start of a line, not at whitespace or in a container.
       if (self.now().column > 1) return nok(code)
-      buffer = code === codes.lowercaseE ? 'export' : 'import'
+
       effects.enter('mdxjsEsm')
       effects.enter('mdxjsEsmData')
-      return keyword(code)
+      effects.consume(code)
+      // eslint-disable-next-line unicorn/prefer-code-point
+      buffer += String.fromCharCode(code)
+      return word
     }
 
-    /** @type {State} */
-    function keyword(code) {
-      if (code === buffer.codePointAt(index++)) {
+    /**
+     * In keyword.
+     *
+     * ```markdown
+     * > | import a from 'b'
+     *     ^^^^^^
+     * ```
+     *
+     * @type {State}
+     */
+    function word(code) {
+      if (asciiAlpha(code)) {
         effects.consume(code)
-        return index === buffer.length ? after : keyword
+        // eslint-disable-next-line unicorn/prefer-code-point
+        buffer += String.fromCharCode(code)
+        return word
+      }
+
+      if (
+        (buffer === 'import' || buffer === 'export') &&
+        code === codes.space
+      ) {
+        effects.consume(code)
+        return inside
       }
 
       return nok(code)
     }
 
-    /** @type {State} */
-    function after(code) {
-      if (unicodeWhitespace(code)) {
-        effects.consume(code)
-        return rest
-      }
-
-      return nok(code)
-    }
-
-    /** @type {State} */
-    function rest(code) {
-      if (code === codes.eof) {
-        return atEndOfData(code)
-      }
-
-      if (markdownLineEnding(code)) {
-        return effects.check(nextBlankConstruct, atEndOfData, atEol)(code)
+    /**
+     * In data.
+     *
+     * ```markdown
+     * > | import a from 'b'
+     *           ^
+     * ```
+     *
+     * @type {State}
+     */
+    function inside(code) {
+      if (code === codes.eof || markdownLineEnding(code)) {
+        effects.exit('mdxjsEsmData')
+        return lineStart(code)
       }
 
       effects.consume(code)
-      return rest
+      return inside
     }
 
-    /** @type {State} */
-    function atEol(code) {
-      effects.exit('mdxjsEsmData')
-      return lineStart(code)
-    }
-
-    /** @type {State} */
+    /**
+     * At line ending.
+     *
+     * ```markdown
+     * > | import a from 'b'
+     *                      ^
+     *   | export {a}
+     * ```
+     *
+     * @type {State}
+     */
     function lineStart(code) {
-      if (markdownLineEnding(code)) {
-        effects.enter(types.lineEnding)
-        effects.consume(code)
-        effects.exit(types.lineEnding)
-        return lineStart
-      }
-
       if (code === codes.eof) {
         return atEnd(code)
       }
 
+      if (markdownLineEnding(code)) {
+        return effects.check(blankLineBefore, atEnd, continuationStart)(code)
+      }
+
       effects.enter('mdxjsEsmData')
-      return rest(code)
+      return inside(code)
     }
 
-    /** @type {State} */
-    function atEndOfData(code) {
-      effects.exit('mdxjsEsmData')
-      return atEnd(code)
+    /**
+     * At line ending that continues.
+     *
+     * ```markdown
+     * > | import a from 'b'
+     *                      ^
+     *   | export {a}
+     * ```
+     *
+     * @type {State}
+     */
+    function continuationStart(code) {
+      assert(markdownLineEnding(code))
+      effects.enter(types.lineEnding)
+      effects.consume(code)
+      effects.exit(types.lineEnding)
+      return lineStart
     }
 
-    /** @type {State} */
+    /**
+     * At end of line (blank or eof).
+     *
+     * ```markdown
+     * > | import a from 'b'
+     *                      ^
+     * ```
+     *
+     * @type {State}
+     */
     function atEnd(code) {
-      let index = -1
       const result = eventsToAcorn(self.events.slice(eventStart), {
         acorn,
         acornOptions,
@@ -178,11 +224,13 @@ export function mdxjsEsm(options) {
             : ''
       })
 
-      if (code !== codes.eof && result.swallow) {
-        return lineStart(code)
-      }
-
       if (result.error) {
+        // There’s an error, which could be solved with more content, and there
+        // is more content.
+        if (code !== codes.eof && result.swallow) {
+          return continuationStart(code)
+        }
+
         throw new VFileMessage(
           'Could not parse import/exports with acorn: ' + String(result.error),
           {
@@ -196,10 +244,14 @@ export function mdxjsEsm(options) {
 
       assert(result.estree, 'expected `estree` to be defined')
 
-      // Remove the `VariableDeclaration`
+      // Remove the `VariableDeclaration`.
       if (definedModuleSpecifiers.length > 0) {
-        result.estree.body.shift()
+        const declaration = result.estree.body.shift()
+        assert(declaration)
+        assert(declaration.type === 'VariableDeclaration')
       }
+
+      let index = -1
 
       while (++index < result.estree.body.length) {
         const node = result.estree.body[index]
@@ -221,7 +273,8 @@ export function mdxjsEsm(options) {
           let index = -1
 
           while (++index < node.specifiers.length) {
-            definedModuleSpecifiers.push(node.specifiers[index].local.name)
+            const specifier = node.specifiers[index]
+            definedModuleSpecifiers.push(specifier.local.name)
           }
         }
       }
@@ -240,9 +293,11 @@ export function mdxjsEsm(options) {
 function tokenizeNextBlank(effects, ok, nok) {
   return start
 
-  /** @type {State} */
+  /**
+   * @type {State}
+   */
   function start(code) {
-    effects.exit('mdxjsEsmData')
+    assert(markdownLineEnding(code))
     effects.enter(types.lineEndingBlank)
     effects.consume(code)
     effects.exit(types.lineEndingBlank)
