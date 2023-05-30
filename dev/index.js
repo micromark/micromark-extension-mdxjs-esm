@@ -1,5 +1,2 @@
-/**
- * @typedef {import('./lib/syntax.js').Options} Options
- */
-
+// Note: more types exposed from `index.d.ts`.
 export {mdxjsEsm} from './lib/syntax.js'

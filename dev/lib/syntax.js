@@ -75,9 +75,7 @@ export function mdxjsEsm(options) {
     const self = this
     /** @type {Array<string>} */
     const definedModuleSpecifiers =
-      // @ts-expect-error: hush
       self.parser.definedModuleSpecifiers ||
-      // @ts-expect-error: hush
       (self.parser.definedModuleSpecifiers = [])
     const eventStart = this.events.length + 1 // Add the main `mdxjsEsm` token
     let buffer = ''
@@ -124,6 +122,7 @@ export function mdxjsEsm(options) {
     function word(code) {
       if (asciiAlpha(code)) {
         effects.consume(code)
+        // @ts-expect-error: definitely a number.
         // eslint-disable-next-line unicorn/prefer-code-point
         buffer += String.fromCharCode(code)
         return word

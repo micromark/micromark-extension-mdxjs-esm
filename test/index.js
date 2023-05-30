@@ -313,6 +313,7 @@ test('mdxjsEsm', async function () {
     'should support a reexport from another esm block (2)'
   )
 
+  /** @type {HtmlExtension} */
   assert.equal(
     micromark('export var a = () => {}\n\nb', {
       extensions: [mdxjsEsm({acorn, addResult: true})],
@@ -325,17 +326,22 @@ test('mdxjsEsm', async function () {
                 '`addResult` should add `estree` to `mdxjsEsm`'
               )
               assert.equal(
-                // @ts-expect-error: hush.
                 token.estree.type,
                 'Program',
                 '`addResult` should add a program'
               )
-              // @ts-expect-error: hush.
+              assert(html.enter)
+              assert(html.enter.mdxjsEsm)
               return html.enter.mdxjsEsm.call(this, token)
             }
           },
-          // @ts-expect-error: hush.
-          exit: {mdxjsEsm: html.exit.mdxjsEsm}
+          exit: {
+            mdxjsEsm(token) {
+              assert(html.exit)
+              assert(html.exit.mdxjsEsm)
+              return html.exit.mdxjsEsm.call(this, token)
+            }
+          }
         }
       ]
     }),

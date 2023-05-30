@@ -42,6 +42,7 @@
     "default": "./index.js"
   },
   "dependencies": {
+    "@types/estree": "^1.0.0",
     "micromark-core-commonmark": "^1.0.0",
     "micromark-util-character": "^1.0.0",
     "micromark-util-events-to-acorn": "^1.0.0",
