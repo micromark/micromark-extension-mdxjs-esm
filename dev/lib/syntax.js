@@ -14,10 +14,10 @@
  *   Acorn parser to use (required).
  * @property {AcornOptions | null | undefined} [acornOptions]
  *   Configuration for acorn (default: `{ecmaVersion: 2020, locations: true,
- *   sourceType: 'module'}`).
- *   all fields except `locations` can be set
+ *   sourceType: 'module'}`); all fields except `locations` can be set.
  * @property {boolean | null | undefined} [addResult=false]
- *   Whether to add `estree` fields to tokens with results from acorn.
+ *   Whether to add `estree` fields to tokens with results from acorn
+ *   (default: `false`).
  */
 
 import {ok as assert} from 'uvu/assert'
@@ -73,7 +73,6 @@ export function mdxjsEsm(options) {
    */
   function tokenizeExportImport(effects, ok, nok) {
     const self = this
-    /** @type {Array<string>} */
     const definedModuleSpecifiers =
       self.parser.definedModuleSpecifiers ||
       (self.parser.definedModuleSpecifiers = [])
