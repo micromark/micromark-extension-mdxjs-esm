@@ -263,12 +263,15 @@ It exports the additional type [`Options`][api-options].
 
 ## Compatibility
 
-Projects maintained by the unified collective are compatible with all maintained
+Projects maintained by the unified collective are compatible with maintained
 versions of Node.js.
-As of now, that is Node.js 16+.
-Our projects sometimes work with older versions, but this is not guaranteed.
 
-These extensions work with `micromark` version 3+.
+When we cut a new major release, we drop support for unmaintained versions of
+Node.
+This means we try to keep the current release line,
+`micromark-extension-mdxjs-esm@^1`, compatible with Node.js 12.
+
+This package works with `micromark` version `3` and later.
 
 ## Security
 
@@ -311,9 +314,9 @@ abide by its terms.
 
 [downloads]: https://www.npmjs.com/package/micromark-extension-mdxjs-esm
 
-[size-badge]: https://img.shields.io/bundlephobia/minzip/micromark-extension-mdxjs-esm.svg
+[size-badge]: https://img.shields.io/badge/dynamic/json?label=minzipped%20size&query=$.size.compressedSize&url=https://deno.bundlejs.com/?q=micromark-extension-mdxjs-esm
 
-[size]: https://bundlephobia.com/result?p=micromark-extension-mdxjs-esm
+[size]: https://bundlejs.com/?q=micromark-extension-mdxjs-esm
 
 [sponsors-badge]: https://opencollective.com/unified/sponsors/badge.svg
 
@@ -333,11 +336,11 @@ abide by its terms.
 
 [author]: https://wooorm.com
 
-[contributing]: https://github.com/micromark/.github/blob/HEAD/contributing.md
+[contributing]: https://github.com/micromark/.github/blob/main/contributing.md
 
-[support]: https://github.com/micromark/.github/blob/HEAD/support.md
+[support]: https://github.com/micromark/.github/blob/main/support.md
 
-[coc]: https://github.com/micromark/.github/blob/HEAD/code-of-conduct.md
+[coc]: https://github.com/micromark/.github/blob/main/code-of-conduct.md
 
 [esm]: https://gist.github.com/sindresorhus/a39789f98801d908bbc7ff3ecc99d99c
 
