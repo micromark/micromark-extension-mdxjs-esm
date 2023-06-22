@@ -24,8 +24,7 @@ import {ok as assert} from 'uvu/assert'
 import {blankLine} from 'micromark-core-commonmark'
 import {asciiAlpha, markdownLineEnding} from 'micromark-util-character'
 import {eventsToAcorn} from 'micromark-util-events-to-acorn'
-import {codes} from 'micromark-util-symbol/codes.js'
-import {types} from 'micromark-util-symbol/types.js'
+import {codes, types} from 'micromark-util-symbol'
 import {positionFromEstree} from 'unist-util-position-from-estree'
 import {VFileMessage} from 'vfile-message'
 
@@ -215,6 +214,7 @@ export function mdxjsEsm(options) {
       const result = eventsToAcorn(self.events.slice(eventStart), {
         acorn,
         acornOptions,
+        tokenTypes: ['mdxjsEsmData'],
         prefix:
           definedModuleSpecifiers.length > 0
             ? 'var ' + definedModuleSpecifiers.join(',') + '\n'
