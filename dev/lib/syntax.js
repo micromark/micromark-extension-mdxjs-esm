@@ -30,6 +30,8 @@ import {VFileMessage} from 'vfile-message'
 
 const blankLineBefore = {tokenize: tokenizeNextBlank, partial: true}
 
+const trouble = 'https://github.com/micromark/micromark-extension-mdxjs-esm'
+
 const allowedAcornTypes = new Set([
   'ExportAllDeclaration',
   'ExportDefaultDeclaration',
@@ -228,15 +230,21 @@ export function mdxjsEsm(options) {
           return continuationStart(code)
         }
 
-        throw new VFileMessage(
-          'Could not parse import/exports with acorn: ' + String(result.error),
+        const error = new VFileMessage(
+          'Could not parse import/exports with acorn',
           {
-            line: result.error.loc.line,
-            column: result.error.loc.column + 1,
-            offset: result.error.pos
-          },
-          'micromark-extension-mdxjs-esm:acorn'
+            cause: result.error,
+            place: {
+              line: result.error.loc.line,
+              column: result.error.loc.column + 1,
+              offset: result.error.pos
+            },
+            ruleId: 'acorn',
+            source: 'micromark-extension-mdxjs-esm'
+          }
         )
+        error.url = trouble + '#could-not-parse-importexports-with-acorn'
+        throw error
       }
 
       assert(result.estree, 'expected `estree` to be defined')
@@ -254,13 +262,20 @@ export function mdxjsEsm(options) {
         const node = result.estree.body[index]
 
         if (!allowedAcornTypes.has(node.type)) {
-          throw new VFileMessage(
+          const error = new VFileMessage(
             'Unexpected `' +
               node.type +
               '` in code: only import/exports are supported',
-            positionFromEstree(node),
-            'micromark-extension-mdxjs-esm:non-esm'
+            {
+              place: positionFromEstree(node),
+              ruleId: 'non-esm',
+              source: 'micromark-extension-mdxjs-esm'
+            }
           )
+          error.url =
+            trouble +
+            '#unexpected-type-in-code-only-importexports-are-supported'
+          throw error
         }
 
         // Otherwise, when we’re not interrupting (hacky, because `interrupt` is

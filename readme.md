@@ -22,7 +22,7 @@
 *   [Authoring](#authoring)
 *   [Syntax](#syntax)
 *   [Errors](#errors)
-    *   [Could not parse import/exports with acorn: $error](#could-not-parse-importexports-with-acorn-error)
+    *   [Could not parse import/exports with acorn](#could-not-parse-importexports-with-acorn)
     *   [Unexpected `$type` in code: only import/exports are supported](#unexpected-type-in-code-only-importexports-are-supported)
 *   [Tokens](#tokens)
 *   [Types](#types)
@@ -163,7 +163,7 @@ Otherwise, the acorn error is thrown.
 
 Some examples of valid export and import statements:
 
-```js
+```mdx
 import a from 'b'
 import * as a from 'b'
 import {a} from 'b'
@@ -199,7 +199,9 @@ export function a() {
   return 'b'
 
 }
+```
 
+```mdx-invalid
 {/* A blank line must be used after import/exports: this is incorrect! */}
 
 import a from 'b'
@@ -221,13 +223,13 @@ This construct must be followed by a blank line or eof (end of file).
 
 ## Errors
 
-### Could not parse import/exports with acorn: $error
+### Could not parse import/exports with acorn
 
 This error occurs if acorn crashes (source: `micromark-extension-mdxjs-esm`,
 rule id: `acorn`).
 For example:
 
-```js
+```mdx-invalid
 import 1/1
 ```
 
@@ -237,7 +239,7 @@ This error occurs when a non-ESM construct is found (source:
 `micromark-extension-mdxjs-esm`, rule id: `non-esm`).
 For example:
 
-```js
+```mdx-invalid
 export var a = 1
 var b
 ```

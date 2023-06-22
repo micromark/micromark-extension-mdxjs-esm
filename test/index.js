@@ -191,13 +191,13 @@ test('mdxjsEsm', async function (t) {
   await t.test('should crash on invalid import/exports (1)', async function () {
     assert.throws(function () {
       micromark('import a', {extensions: [mdxjsEsm({acorn})]})
-    }, /Could not parse import\/exports with acorn: SyntaxError: Unexpected token/)
+    }, /Could not parse import\/exports with acorn/)
   })
 
   await t.test('should crash on invalid import/exports (2)', async function () {
     assert.throws(function () {
       micromark('import 1/1', {extensions: [mdxjsEsm({acorn})]})
-    }, /Could not parse import\/exports with acorn: SyntaxError: Unexpected token/)
+    }, /Could not parse import\/exports with acorn/)
   })
 
   await t.test(
@@ -233,7 +233,7 @@ test('mdxjsEsm', async function (t) {
         micromark('import a from "b"\n*md*?', {
           extensions: [mdxjsEsm({acorn})]
         })
-      }, /Could not parse import\/exports with acorn: SyntaxError: Unexpected token/)
+      }, /Could not parse import\/exports with acorn/)
     }
   )
 
@@ -327,7 +327,7 @@ test('mdxjsEsm', async function (t) {
         extensions: [mdxjsEsm({acorn})],
         htmlExtensions: [html]
       })
-    }, /Export 'a' is not defined/)
+    }, /Could not parse import\/exports with acorn/)
   })
 
   await t.test('should support `acornOptions` (1)', async function () {
@@ -336,7 +336,7 @@ test('mdxjsEsm', async function (t) {
         extensions: [mdxjsEsm({acorn, acornOptions: {ecmaVersion: 5}})],
         htmlExtensions: [html]
       })
-    }, /Could not parse import\/exports with acorn: SyntaxError: Unexpected token/)
+    }, /Could not parse import\/exports with acorn/)
   })
 
   await t.test('should support `acornOptions` (2)', async function () {
