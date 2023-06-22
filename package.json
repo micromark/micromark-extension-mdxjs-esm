@@ -43,13 +43,13 @@
   },
   "dependencies": {
     "@types/estree": "^1.0.0",
+    "devlop": "^1.0.0",
     "micromark-core-commonmark": "^2.0.0",
     "micromark-util-character": "^2.0.0",
     "micromark-util-events-to-acorn": "^2.0.0",
     "micromark-util-symbol": "^2.0.0",
     "micromark-util-types": "^2.0.0",
     "unist-util-position-from-estree": "^1.1.0",
-    "uvu": "^0.5.0",
     "vfile-message": "^4.0.0"
   },
   "devDependencies": {

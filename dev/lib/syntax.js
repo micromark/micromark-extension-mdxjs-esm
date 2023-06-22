@@ -20,7 +20,7 @@
  *   (default: `false`).
  */
 
-import {ok as assert} from 'uvu/assert'
+import {ok as assert} from 'devlop'
 import {blankLine} from 'micromark-core-commonmark'
 import {asciiAlpha, markdownLineEnding} from 'micromark-util-character'
 import {eventsToAcorn} from 'micromark-util-events-to-acorn'
