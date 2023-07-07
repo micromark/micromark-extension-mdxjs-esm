@@ -47,7 +47,7 @@
     "micromark-util-events-to-acorn": "^2.0.0",
     "micromark-util-symbol": "^2.0.0",
     "micromark-util-types": "^2.0.0",
-    "unist-util-position-from-estree": "^1.1.0",
+    "unist-util-position-from-estree": "^2.0.0",
     "vfile-message": "^4.0.0"
   },
   "devDependencies": {
