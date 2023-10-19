@@ -139,7 +139,7 @@ Configuration (TypeScript type).
 *   `acorn` ([`Acorn`][acorn], required)
     — acorn parser to use
 *   `acornOptions` ([`AcornOptions`][acorn-options], default:
-    `{ecmaVersion: 2020, locations: true, sourceType: 'module'}`)
+    `{ecmaVersion: 2024, locations: true, sourceType: 'module'}`)
     — configuration for acorn; all fields except `locations` can be set
 *   `addResult` (`boolean`, default: `false`)
     — whether to add `estree` fields to tokens with results from acorn

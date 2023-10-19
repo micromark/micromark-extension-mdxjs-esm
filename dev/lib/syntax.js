@@ -13,7 +13,7 @@
  * @property {Acorn} acorn
  *   Acorn parser to use (required).
  * @property {AcornOptions | null | undefined} [acornOptions]
- *   Configuration for acorn (default: `{ecmaVersion: 2020, locations: true,
+ *   Configuration for acorn (default: `{ecmaVersion: 2024, locations: true,
  *   sourceType: 'module'}`); all fields except `locations` can be set.
  * @property {boolean | null | undefined} [addResult=false]
  *   Whether to add `estree` fields to tokens with results from acorn
@@ -57,8 +57,9 @@ export function mdxjsEsm(options) {
 
   const acorn = options.acorn
   const acornOptions = Object.assign(
-    {ecmaVersion: 2020, sourceType: 'module'},
-    options.acornOptions
+    {ecmaVersion: 2024, sourceType: 'module'},
+    options.acornOptions,
+    {locations: true}
   )
 
   return {
