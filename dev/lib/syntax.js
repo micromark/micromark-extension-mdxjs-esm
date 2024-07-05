@@ -1,23 +1,6 @@
 /**
- * @typedef {import('micromark-util-events-to-acorn').Acorn} Acorn
- * @typedef {import('micromark-util-events-to-acorn').AcornOptions} AcornOptions
- * @typedef {import('micromark-util-types').Extension} Extension
- * @typedef {import('micromark-util-types').State} State
- * @typedef {import('micromark-util-types').TokenizeContext} TokenizeContext
- * @typedef {import('micromark-util-types').Tokenizer} Tokenizer
- */
-
-/**
- * @typedef Options
- *   Configuration (required).
- * @property {Acorn} acorn
- *   Acorn parser to use (required).
- * @property {AcornOptions | null | undefined} [acornOptions]
- *   Configuration for acorn (default: `{ecmaVersion: 2024, locations: true,
- *   sourceType: 'module'}`); all fields except `locations` can be set.
- * @property {boolean | null | undefined} [addResult=false]
- *   Whether to add `estree` fields to tokens with results from acorn
- *   (default: `false`).
+ * @import {Extension, State, TokenizeContext, Tokenizer} from 'micromark-util-types'
+ * @import {Options} from 'micromark-extension-mdxjs-esm'
  */
 
 import {ok as assert} from 'devlop'
