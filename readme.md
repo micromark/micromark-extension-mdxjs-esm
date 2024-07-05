@@ -12,25 +12,25 @@
 
 ## Contents
 
-*   [What is this?](#what-is-this)
-*   [When to use this](#when-to-use-this)
-*   [Install](#install)
-*   [Use](#use)
-*   [API](#api)
-    *   [`mdxjsEsm(options)`](#mdxjsesmoptions)
-    *   [`Options`](#options)
-*   [Authoring](#authoring)
-*   [Syntax](#syntax)
-*   [Errors](#errors)
-    *   [Could not parse import/exports with acorn](#could-not-parse-importexports-with-acorn)
-    *   [Unexpected `$type` in code: only import/exports are supported](#unexpected-type-in-code-only-importexports-are-supported)
-*   [Tokens](#tokens)
-*   [Types](#types)
-*   [Compatibility](#compatibility)
-*   [Security](#security)
-*   [Related](#related)
-*   [Contribute](#contribute)
-*   [License](#license)
+* [What is this?](#what-is-this)
+* [When to use this](#when-to-use-this)
+* [Install](#install)
+* [Use](#use)
+* [API](#api)
+  * [`mdxjsEsm(options)`](#mdxjsesmoptions)
+  * [`Options`](#options)
+* [Authoring](#authoring)
+* [Syntax](#syntax)
+* [Errors](#errors)
+  * [Could not parse import/exports with acorn](#could-not-parse-importexports-with-acorn)
+  * [Unexpected `$type` in code: only import/exports are supported](#unexpected-type-in-code-only-importexports-are-supported)
+* [Tokens](#tokens)
+* [Types](#types)
+* [Compatibility](#compatibility)
+* [Security](#security)
+* [Related](#related)
+* [Contribute](#contribute)
+* [License](#license)
 
 ## What is this?
 
@@ -122,8 +122,8 @@ Create an extension for `micromark` to enable MDX ESM syntax.
 
 ###### Parameters
 
-*   `options` ([`Options`][api-options], required)
-    — configuration
+* `options` ([`Options`][api-options], required)
+  — configuration
 
 ###### Returns
 
@@ -136,13 +136,13 @@ Configuration (TypeScript type).
 
 ###### Fields
 
-*   `acorn` ([`Acorn`][acorn], required)
-    — acorn parser to use
-*   `acornOptions` ([`AcornOptions`][acorn-options], default:
-    `{ecmaVersion: 2024, locations: true, sourceType: 'module'}`)
-    — configuration for acorn; all fields except `locations` can be set
-*   `addResult` (`boolean`, default: `false`)
-    — whether to add `estree` fields to tokens with results from acorn
+* `acorn` ([`Acorn`][acorn], required)
+  — acorn parser to use
+* `acornOptions` ([`AcornOptions`][acorn-options], default:
+  `{ecmaVersion: 2024, locations: true, sourceType: 'module'}`)
+  — configuration for acorn; all fields except `locations` can be set
+* `addResult` (`boolean`, default: `false`)
+  — whether to add `estree` fields to tokens with results from acorn
 
 ## Authoring
 
@@ -250,11 +250,11 @@ An `mdxjsEsm` token is used to reflect the block of import/exports in markdown.
 
 It includes:
 
-*   `lineEnding` for the `\r`, `\n`, and `\r\n`
-*   `lineEndingBlank` for the same characters but when after potential
-    whitespace and another line ending
-*   `whitespace` for markdown spaces and tabs in blank lines
-*   `mdxjsEsmData` for any character in a line of `mdxjsEsm`
+* `lineEnding` for the `\r`, `\n`, and `\r\n`
+* `lineEndingBlank` for the same characters but when after potential
+  whitespace and another line ending
+* `whitespace` for markdown spaces and tabs in blank lines
+* `mdxjsEsmData` for any character in a line of `mdxjsEsm`
 
 ## Types
 
@@ -279,12 +279,12 @@ This package is safe.
 
 ## Related
 
-*   [`micromark-extension-mdxjs`][micromark-extension-mdxjs]
-    — support all MDX syntax
-*   [`mdast-util-mdxjs-esm`][mdast-util-mdxjs-esm]
-    — support MDX ESM in mdast
-*   [`remark-mdx`][remark-mdx]
-    — support all MDX syntax in remark
+* [`micromark-extension-mdxjs`][micromark-extension-mdxjs]
+  — support all MDX syntax
+* [`mdast-util-mdxjs-esm`][mdast-util-mdxjs-esm]
+  — support MDX ESM in mdast
+* [`remark-mdx`][remark-mdx]
+  — support all MDX syntax in remark
 
 ## Contribute
 
