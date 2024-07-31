@@ -212,11 +212,11 @@ import a from 'b'
 
 ESM forms with the following BNF:
 
-```bnf
+```abnf
 ; Restriction: the entire construct must be valid JavaScript.
-mdx_esm ::= word ' ' *line *(eol *line)
+mdxEsm ::= word " " *line *(eol *line)
 
-word ::= 'e' 'x' 'p' 'o' 'r' 't' | 'i' 'm' 'p' 'o' 'r' 't'
+word ::= "e" "x" "p" "o" "r" "t" | "i" "m" "p" "o" "r" "t"
 ```
 
 This construct must be followed by a blank line or eof (end of file).
